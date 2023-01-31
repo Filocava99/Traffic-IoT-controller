@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package it.unibo.coordination.tusow.grpc;
+
+message TupleSpaceID {
+  string id = 1;
+  TupleSpaceType type = 2;
+}
+
+enum TupleSpaceType {
+  LOGIC = 0;
+  TEXTUAL = 1;
+}
+
+message IOResponse {
+  bool response = 1;
+  string message = 2;
+}
+
+message IOResponseList{
+  repeated IOResponse responses = 1;
+}
+
+message Tuple{
+  string key = 1;
+  string value = 2;
+}
+
+message TuplesList{
+  repeated Tuple tuples = 1;
+}
+
+message Template{
+  message Logic{
+    string query = 1;
+  }
+  message Textual{
+    string regex = 1;
+  }
+}
+
+message TemplatesList{
+  message LogicTemplatesList{
+    repeated Template.Logic queries = 1 ;
+  }
+  message TextualTemplatesList{
+    repeated Template.Textual regexes = 1;
+  }
+}
+
+message WriteRequest{
+  TupleSpaceID tupleSpaceID = 1;
+  Tuple tuple = 2;
+}
+
+message ReadOrTakeRequest{
+  TupleSpaceID tupleSpaceID = 1;
+
+  oneof template {
+    Template.Logic logicTemplate = 2;
+    Template.Textual textualTemplate = 3;
+  }
+}
+
+message WriteAllRequest{
+  TuplesList tuplesList = 1;
+  TupleSpaceID tupleSpaceID = 2;
+}
+
+message ReadOrTakeAllRequest{
+    oneof templates {
+      TemplatesList.TextualTemplatesList textualTemplateList = 1;
+      TemplatesList.LogicTemplatesList logicTemplateList = 2;
+    }
+    TupleSpaceID tupleSpaceID = 3;
+}
+
+service TusowService{
+  rpc validateTupleSpace(TupleSpaceID) returns (IOResponse);
+  rpc createTupleSpace(TupleSpaceID) returns (IOResponse);
+  rpc write(WriteRequest) returns (IOResponse);
+  rpc read(ReadOrTakeRequest) returns (Tuple);
+  rpc take(ReadOrTakeRequest) returns (Tuple);
+  rpc writeAll(WriteAllRequest) returns (IOResponseList);
+  rpc readAll(ReadOrTakeAllRequest) returns (TuplesList);
+  rpc takeAll(ReadOrTakeAllRequest) returns (TuplesList);
+  rpc writeAllAsStream(WriteAllRequest) returns (stream IOResponse);
+  rpc readAllAsStream(ReadOrTakeAllRequest) returns (stream Tuple);
+  rpc takeAllAsStream(ReadOrTakeAllRequest) returns (stream Tuple);
+}
+
