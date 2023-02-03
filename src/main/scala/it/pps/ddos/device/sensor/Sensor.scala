@@ -64,12 +64,11 @@ class ProcessedDataSensor[I: DataType, O: DataType](id: String,
 
 class StoreDataSensor[O: DataType](id: String,
                                    destinations: List[ActorRef[DeviceMessage]],
-                                  // add processFun
-                                   duration: FiniteDuration)
-  extends Device[O](id, destinations) with Sensor[O, O]:
+                                   processFun: O => O,
+                                   duration: FiniteDuration) extends Device[O](id, destinations) with Sensor[O, O]:
   var storedStatus: List[O] = List.empty
   override def update(selfId: ActorRef[SensorMessage], physicalInput: O): Unit =
     super.update(selfId, physicalInput)
     storedStatus = preProcess(physicalInput) :: storedStatus
-  override def preProcess: O => O = x => x
-  override def behavior(): Behavior[DeviceMessage] = SensorActor(this).storeBehavior(duration)
+  override def preProcess: O => O = processFun
+  override def behavior(): Behavior[DeviceMessage] = SensorActor(this).dataStorageBehavior(duration)

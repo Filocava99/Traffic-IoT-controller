@@ -55,7 +55,7 @@ class SensorActor[I: DataType, O: DataType](val sensor: Sensor[I, O]):
       .orElse(DeviceBehavior.getBasicBehavior(sensor, context)))
   }
 
-  def storeBehavior(duration: FiniteDuration): Behavior[DeviceMessage] =
+  def dataStorageBehavior(duration: FiniteDuration): Behavior[DeviceMessage] =
     Behaviors.setup { context =>
       Behaviors.withTimers { timer =>
         timer.startTimerWithFixedDelay(StoreDataSensorKey, Tick, duration)

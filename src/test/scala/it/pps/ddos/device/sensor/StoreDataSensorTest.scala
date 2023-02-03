@@ -27,7 +27,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     val testProbe = testKit.createTestProbe[Message]()
 
     val interval: FiniteDuration = FiniteDuration(3, "seconds")
-    val storeDataSensor = new StoreDataSensor[Double]("storage", List(testProbe.ref), interval)
+    val storeDataSensor = new StoreDataSensor[Double]("storage", List(testProbe.ref), x => x, interval)
     val storeDataSensorActor = testKit.spawn(storeDataSensor.behavior())
 
     var randNumb = 0.0
@@ -57,7 +57,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     val testProbe = testKit.createTestProbe[Message]()
 
     val interval: FiniteDuration = FiniteDuration(3, "seconds")
-    val storeDataSensor = new StoreDataSensor[Double]("storage", List(testProbe.ref), interval)
+    val storeDataSensor = new StoreDataSensor[Double]("storage", List(testProbe.ref), x => x, interval)
     val storeDataSensorActor = testKit.spawn(storeDataSensor.behavior())
 
     var randNumb = 0.0
@@ -79,7 +79,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     val testProbe = testKit.createTestProbe[Message]()
 
     val interval: FiniteDuration = FiniteDuration(3, "seconds")
-    val storeDataSensor = new StoreDataSensor[Double]("storage", List(testProbe.ref), interval)
+    val storeDataSensor = new StoreDataSensor[Double]("storage", List(testProbe.ref), x => x, interval)
     val storeDataSensorActor = testKit.spawn(storeDataSensor.behavior())
 
     var randNumb = 0.0
@@ -118,7 +118,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     val testProbe = testKit.createTestProbe[Message]()
 
     val interval: FiniteDuration = FiniteDuration(3, "seconds")
-    val storeDataSensor = new StoreDataSensor[Double]("storage", List(testProbe.ref), interval)
+    val storeDataSensor = new StoreDataSensor[Double]("storage", List(testProbe.ref), x => x, interval)
     val storeDataSensorActor = testKit.spawn(storeDataSensor.behavior())
 
     var randNumb = 0.0
