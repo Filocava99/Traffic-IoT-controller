@@ -15,7 +15,8 @@ object BlockingGroup extends GroupActor:
 
   override def getTriggerBehavior[I,O](context: ActorContext[DeviceMessage],
                                        g: Group[I,O],
-                                       sources: ActorList): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
+                                       sources: ActorList,
+                                       reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case Status[I](author, value) =>
       context.self ! Statuses(author, List(value))
       Behaviors.same
@@ -24,11 +25,11 @@ object BlockingGroup extends GroupActor:
       context.self ! CrossOut(author)
       Behaviors.same
     case CrossOut(source) if sources.length > 1 =>
-      active(sources.filter(_ != source), g, context)
+      active(sources.filter(_ != source), g, context, reset)
     case CrossOut(source) if sources.contains(source) =>
       g.compute(); g.reset()
       context.self ! PropagateStatus(context.self)
-      active(g.getSources(), g, context)
+      active(g.getSources(), g, context, reset)
 
 /**
  * NonBlockingGroup is a group that triggers the computation each time that receives a status from a source, overriding it
@@ -37,11 +38,13 @@ object BlockingGroup extends GroupActor:
 object NonBlockingGroup extends GroupActor:
   override def getTriggerBehavior[I,O](context: ActorContext[DeviceMessage],
                                        g: Group[I,O],
-                                       sources: ActorList): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
+                                       sources: ActorList,
+                                       reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case Status[I](author, value) =>
       context.self ! Statuses(author, List(value))
       Behaviors.same
     case Statuses[I](author: Actor, value) if g.getSources().contains(author) =>
       g.insert(author, value); g.compute();
+      if(reset) g.reset()
       context.self ! PropagateStatus(context.self)
       Behaviors.same

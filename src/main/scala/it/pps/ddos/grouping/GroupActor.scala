@@ -17,22 +17,25 @@ trait GroupActor:
   /**
    * Return a new group actor with the given Group instance as actor state.
    * @param g is the Group instance that will define the computation of this group.
+   * @param reset is the boolean that defines if the stored values should be resetted after computation.
    * @return a new group actor behavior in the "connecting" state.
    */
-  def apply(g: Group[_,_]): Behavior[DeviceMessage] =
+  def apply(g: Group[_,_], reset: Boolean = false): Behavior[DeviceMessage] =
     Behaviors.setup[DeviceMessage] {
       context =>
         g.getSources().foreach(_ ! Subscribe(context.self))
-        connecting(g.getSources(), g.copy())
+        connecting(g.getSources(), g.copy(), reset)
     }
+
 
   /**
    * is the state in which the group actor is trying to subscribe to all its sources, waiting for all their SubscribeAcks.
    * @param sources are the sources that still don't has responded.
    * @param g is the actor state.
+   * @param reset is the boolean that defines if the stored values should be resetted after computation.
    * @return the corresponding behavior.
    */
-  protected def connecting(sources: ActorList, g: Group[_,_]): Behavior[DeviceMessage] =
+  protected def connecting(sources: ActorList, g: Group[_,_], reset: Boolean): Behavior[DeviceMessage] =
     Behaviors.withTimers[DeviceMessage] { timer =>
       timer.startTimerAtFixedRate("connectingStateTimer", Timeout(), FiniteDuration(3, "second"))
       Behaviors.receivePartial { (context, message) =>
@@ -41,10 +44,10 @@ trait GroupActor:
             sources.foreach(_ ! Subscribe(context.self))
             Behaviors.same
           case (SubscribeAck(author), sources) if sources.length > 1 =>
-            connecting(sources.filter(_ != author), g)
+            connecting(sources.filter(_ != author), g, reset)
           case (SubscribeAck(author), sources) if sources.contains(author) =>
             timer.cancel("connectingStateTimer")
-            active(g.getSources(), g, context)
+            active(g.getSources(), g, context, reset)
           case _ =>
             Behaviors.same
       }
@@ -55,20 +58,23 @@ trait GroupActor:
    * @param sources is the list of sources of this group. This list determines the Devices which messages are evaluated.
    * @param g is the group actor state.
    * @param context is the context of the group actor.
+   * @param reset is the boolean that defines if the stored values should be resetted after computation.
    * @return the corresponding behavior.
    */
-  protected def active(sources: ActorList, g: Group[_,_], context: ActorContext[DeviceMessage]): Behavior[DeviceMessage] =
-    Behaviors.receiveMessagePartial(getTriggerBehavior(context, g, sources).orElse(DeviceBehavior.getBasicBehavior(g, context)))
+  protected def active(sources: ActorList, g: Group[_,_], context: ActorContext[DeviceMessage], reset: Boolean): Behavior[DeviceMessage] =
+    Behaviors.receiveMessagePartial(getTriggerBehavior(context, g, sources, reset).orElse(DeviceBehavior.getBasicBehavior(g, context)))
 
   /**
    * is the method to override to provide a trigger strategy for the inpur gathering and computation timing.
    * @param context is the context of the group actor.
    * @param g is the group actor state that specify what to do when the compute method is called.
    * @param sources is the list of sources of this group.
+   * @param reset is the boolean that defines if the stored values should be resetted after computation.
    * @tparam I is the input type of the computation.
    * @tparam O is the output type of the computation.
    * @return a partial function that defines a behavior that will be prepended to the standard Device communication protocol.
    */
   protected def getTriggerBehavior[I,O](context: ActorContext[DeviceMessage],
                               g: Group[I,O],
-                              sources: ActorList): PartialFunction[DeviceMessage, Behavior[DeviceMessage]]
+                              sources: ActorList,
+                              reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]]

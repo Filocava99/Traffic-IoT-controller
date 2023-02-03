@@ -12,7 +12,8 @@ import it.pps.ddos.grouping.{BlockingGroup, Group, NonBlockingGroup}
 trait Deployable[I, O](tm: TriggerMode) extends Group[I, O] :
   override def behavior(): Behavior[DeviceMessage] = tm match
     case TriggerMode.BLOCKING => BlockingGroup(this)
-    case TriggerMode.NONBLOCKING => NonBlockingGroup(this)
+    case TriggerMode.NONBLOCKING(resetAfterTrigger: Boolean) => NonBlockingGroup(this, resetAfterTrigger)
+
 
   override def hashCode(): Int = super.hashCode()
 
@@ -21,4 +22,4 @@ trait Deployable[I, O](tm: TriggerMode) extends Group[I, O] :
  */
 enum TriggerMode:
   case BLOCKING extends TriggerMode
-  case NONBLOCKING extends TriggerMode
+  case NONBLOCKING(resetAfterTrigger: Boolean) extends TriggerMode
