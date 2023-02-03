@@ -23,34 +23,6 @@ class StoreDataSensorTest extends AnyFlatSpec:
 
   val testKit = ActorTestKit()
 
-  /*class StoreDataSensor(id: String, refs: List[ActorRef[DeviceMessage]], duration: FiniteDuration)
-    extends BasicSensor[Double](id, refs) with Timer(duration):
-    private case object StoreDataSensorKey
-    var statusList = List.empty[Double]
-
-    override def update(selfId: ActorRef[SensorMessage], physicalInput: Double): Unit =
-      super.update(selfId, physicalInput)
-      statusList = preProcess(physicalInput) :: statusList
-
-    override def behavior(): Behavior[DeviceMessage] =
-      Behaviors.setup { context =>
-        Behaviors.withTimers { timer =>
-          timer.startTimerWithFixedDelay(StoreDataSensorKey, Tick, duration)
-          Behaviors.receiveMessagePartial(
-            DeviceBehavior.getBasicBehavior(this, context)
-              .orElse(DeviceBehavior.getTimedBehavior(this, context))
-              .orElse({
-                case UpdateStatus(value: Double) =>
-                  this.update(context.self, value)
-                  Behaviors.same
-                case ReceivedAck(values) =>
-                  statusList = statusList.filter(p => !values.contains(p))
-                  Behaviors.same
-              })
-          )
-        }
-      }*/
-
   def testStoringDataInSensor(): Unit =
     val testProbe = testKit.createTestProbe[Message]()
 
