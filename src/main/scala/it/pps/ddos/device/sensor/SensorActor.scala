@@ -3,12 +3,12 @@ package it.pps.ddos.device.sensor
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import it.pps.ddos.device.sensor.Sensor
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, PropagateStatus, SensorMessage, Subscribe, Unsubscribe, UpdateStatus}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, PropagateStatus, ReceivedAck, SensorMessage, Status, Statuses, Subscribe, Unsubscribe, UpdateStatus}
 import it.pps.ddos.device.DeviceBehavior
 import it.pps.ddos.device.DeviceBehavior.Tick
 import it.pps.ddos.utils.DataType
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 /**
  * Actor definition of a sensor
@@ -18,9 +18,15 @@ object SensorActor:
 
 class SensorActor[I: DataType, O: DataType](val sensor: Sensor[I, O]):
   private case object TimedSensorKey
+  private case object StoreDataSensorKey
   private def getBasicSensorBehavior(ctx: ActorContext[DeviceMessage]): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case UpdateStatus[I](value) =>
       sensor.update(ctx.self, value)
+      Behaviors.same
+
+  private def getStoreDataSensorBehavior(ctx: ActorContext[DeviceMessage]): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
+    case ReceivedAck(values) =>
+      sensor.asInstanceOf[StoreDataSensor[O]].storedStatus = sensor.asInstanceOf[StoreDataSensor[O]].storedStatus.filter(p => !values.contains(p))
       Behaviors.same
 
   /**
@@ -48,3 +54,14 @@ class SensorActor[I: DataType, O: DataType](val sensor: Sensor[I, O]):
     Behaviors.receiveMessagePartial(getBasicSensorBehavior(context)
       .orElse(DeviceBehavior.getBasicBehavior(sensor, context)))
   }
+
+  def storeBehavior(duration: FiniteDuration): Behavior[DeviceMessage] =
+    Behaviors.setup { context =>
+      Behaviors.withTimers { timer =>
+        timer.startTimerWithFixedDelay(StoreDataSensorKey, Tick, duration)
+        Behaviors.receiveMessagePartial(getBasicSensorBehavior(context)
+          .orElse(DeviceBehavior.getBasicBehavior(sensor, context))
+          .orElse(DeviceBehavior.getTimedBehavior(sensor, context))
+          .orElse(getStoreDataSensorBehavior(context)))
+      }
+    }

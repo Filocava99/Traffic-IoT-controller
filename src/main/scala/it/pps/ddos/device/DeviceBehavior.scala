@@ -4,6 +4,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, PropagateStatus, Subscribe, Unsubscribe}
 import it.pps.ddos.device.Device
+import it.pps.ddos.device.sensor.{Sensor, SensorActor}
 
 /**
  * Actor behavior definition of a device
