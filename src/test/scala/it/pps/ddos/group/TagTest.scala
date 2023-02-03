@@ -94,7 +94,7 @@ class TagTest extends AnyFlatSpec:
     val tag1 = tagging.Tag[String, String]("1", List.empty, s => s, TriggerMode.BLOCKING)
     val sensorA = new PublicSensor("A")
     val sensorB = new PublicSensor("B")
-    val tagC = tagging.Tag[Int, String]("C", List.empty, i => i.toString, TriggerMode.NONBLOCKING)
+    val tagC = tagging.Tag[Int, String]("C", List.empty, i => i.toString, TriggerMode.NONBLOCKING(false))
     tag1 <--(sensorA, sensorB, tagC)
     assert(sensorA.getTags() == List(tag1) && sensorB.getTags() == List(tag1) && tagC.getTags() == List(tag1))
 
