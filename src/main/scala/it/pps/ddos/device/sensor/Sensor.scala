@@ -6,6 +6,7 @@ import it.pps.ddos.device.Device
 import it.pps.ddos.device.DeviceProtocol.*
 import it.pps.ddos.utils.{DataType, GivenDataType}
 import it.pps.ddos.utils.GivenDataType.*
+import it.pps.ddos.device.sensor.SensorActor
 
 import scala.collection.immutable.List
 import scala.concurrent.duration.FiniteDuration
@@ -60,3 +61,15 @@ class ProcessedDataSensor[I: DataType, O: DataType](id: String,
                                                     processFun: I => O) extends Device[O](id, destinations) with Sensor[I, O]:
   override def preProcess: I => O = processFun
   override def behavior(): Behavior[DeviceMessage] = SensorActor(this).behavior()
+
+class StoreDataSensor[O: DataType](id: String,
+                                   destinations: List[ActorRef[DeviceMessage]],
+                                  // add processFun
+                                   duration: FiniteDuration)
+  extends Device[O](id, destinations) with Sensor[O, O]:
+  var storedStatus: List[O] = List.empty
+  override def update(selfId: ActorRef[SensorMessage], physicalInput: O): Unit =
+    super.update(selfId, physicalInput)
+    storedStatus = preProcess(physicalInput) :: storedStatus
+  override def preProcess: O => O = x => x
+  override def behavior(): Behavior[DeviceMessage] = SensorActor(this).storeBehavior(duration)

@@ -23,6 +23,8 @@ object DeviceProtocol:
 
   case class UpdateStatus[T](value: T) extends SensorMessage
 
+  case class ReceivedAck[T](values: List[T]) extends SensorMessage
+
   case class Subscribe[M <: Message](replyTo: ActorRef[M]) extends DeviceMessage
 
   case class SubscribeAck[M <: Message](author: ActorRef[M]) extends DeviceMessage
