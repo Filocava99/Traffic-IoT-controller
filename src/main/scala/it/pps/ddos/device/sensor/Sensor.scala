@@ -8,8 +8,11 @@ import it.pps.ddos.utils.{DataType, GivenDataType}
 import it.pps.ddos.utils.GivenDataType.*
 import it.pps.ddos.device.sensor.SensorActor
 
+import java.time.format.DateTimeFormatter
+import java.time.temporal.{Temporal, TemporalAmount, TemporalField, TemporalUnit}
 import scala.collection.immutable.List
 import scala.concurrent.duration.FiniteDuration
+import scala.util.Random
 
 /**
  * Abstract definition of sensor
@@ -65,10 +68,37 @@ class ProcessedDataSensor[I: DataType, O: DataType](id: String,
 class StoreDataSensor[O: DataType](id: String,
                                    destinations: List[ActorRef[DeviceMessage]],
                                    processFun: O => O,
-                                   duration: FiniteDuration) extends Device[O](id, destinations) with Sensor[O, O]:
-  var storedStatus: List[O] = List.empty
+                                   condition: Long => Boolean,
+                                   replyTo: ActorRef[DeviceMessage]) extends Device[O](id, destinations) with Sensor[O, O]:
+
+  var timeStamp: java.time.LocalDateTime = java.time.LocalDateTime.now()
+
+  // Implementation using a random number as map key
+  // var currentKey: Double = Random.nextDouble()
+  // var storedStatus: Map[Double, List[O]] = Map((currentKey, List.empty))
+
+  // Implementation using the DateTime value as map key
+  var storedStatus: Map[java.time.LocalDateTime, List[O]] = Map((timeStamp, List.empty))
+
   override def update(selfId: ActorRef[SensorMessage], physicalInput: O): Unit =
-    super.update(selfId, physicalInput)
-    storedStatus = preProcess(physicalInput) :: storedStatus
+    val currentTime = java.time.LocalDateTime.now()
+    status = Option(preProcess(physicalInput))
+
+    // Implementation using the random number
+    // storedStatus = storedStatus + (currentKey -> (storedStatus(currentKey) :+ preProcess(physicalInput)))
+
+    storedStatus = storedStatus + (timeStamp -> (storedStatus(timeStamp) :+ preProcess(physicalInput)))
+    if condition(currentTime.getMinute - timeStamp.getMinute) then
+      replyTo ! SendData((storedStatus, timeStamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))))
+      println("SENT: " + (storedStatus, timeStamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))))
+      timeStamp = currentTime
+
+      // Implementation using the random number
+      // currentKey = Random.nextDouble()
+      // storedStatus = storedStatus + (currentKey -> List.empty)
+
+      storedStatus = storedStatus + (timeStamp -> List.empty)
+
+
   override def preProcess: O => O = processFun
-  override def behavior(): Behavior[DeviceMessage] = SensorActor(this).dataStorageBehavior(duration)
+  override def behavior(): Behavior[DeviceMessage] = SensorActor(this).dataStorageBehavior()
