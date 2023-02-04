@@ -45,3 +45,6 @@ object GivenDataType:
     
   given HashMapDataType: DataType[mutable.HashMap[Any,Any]] with
     override def defaultValue: mutable.HashMap[Any,Any] = mutable.HashMap.empty
+
+  given LongDataType: DataType[Long] with
+    override def defaultValue: Long = 0L

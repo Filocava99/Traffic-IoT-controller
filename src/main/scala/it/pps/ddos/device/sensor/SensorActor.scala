@@ -24,9 +24,9 @@ class SensorActor[I: DataType, O: DataType](val sensor: Sensor[I, O]):
       sensor.update(ctx.self, value)
       Behaviors.same
 
-  private def getStoreDataSensorBehavior(ctx: ActorContext[DeviceMessage]): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
+  private def getStoreDataSensorBehavior(): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case ReceivedAck(values) =>
-      sensor.asInstanceOf[StoreDataSensor[O]].storedStatus = sensor.asInstanceOf[StoreDataSensor[O]].storedStatus.filter(p => !values.contains(p))
+      sensor.asInstanceOf[StoreDataSensor[O]].storedStatus = sensor.asInstanceOf[StoreDataSensor[O]].storedStatus.filter(el => !values.contains(el._1))
       Behaviors.same
 
   /**
@@ -55,13 +55,9 @@ class SensorActor[I: DataType, O: DataType](val sensor: Sensor[I, O]):
       .orElse(DeviceBehavior.getBasicBehavior(sensor, context)))
   }
 
-  def dataStorageBehavior(duration: FiniteDuration): Behavior[DeviceMessage] =
+  def dataStorageBehavior(): Behavior[DeviceMessage] =
     Behaviors.setup { context =>
-      Behaviors.withTimers { timer =>
-        timer.startTimerWithFixedDelay(StoreDataSensorKey, Tick, duration)
         Behaviors.receiveMessagePartial(getBasicSensorBehavior(context)
           .orElse(DeviceBehavior.getBasicBehavior(sensor, context))
-          .orElse(DeviceBehavior.getTimedBehavior(sensor, context))
-          .orElse(getStoreDataSensorBehavior(context)))
-      }
+          .orElse(getStoreDataSensorBehavior()))
     }
