@@ -6,12 +6,12 @@ object Main{
         val pb = new ProcessBuilder(
             "python",
             "-u",
-            "src/main/resources/yolov7-object-tracking/detect_and_track.py",
+            "src/main/resources/yolov7-object-trackingg/detect_and_track.py",
             "--weights", "yolov7.pt",
             "--save-txt",
             "--save-bbox-dim",
             "--save-with-object-id",
-            "--source", "src/main/resources/yolov7-object-tracking/video.mp4", //TODO change to 0 for webcam
+            "--source", "src/main/resources/yolov7-object-trackingg/video.mp4", //TODO change to 0 for webcam
             "--classes", "0",
             "--device", "0",
             "--name", "YOLOV7 Object Tracking"
