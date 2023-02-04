@@ -227,7 +227,7 @@ def detect(save_img=False):
 
                     if save_txt and not save_with_object_id:
                         # Normalize coordinates
-                        log_output += '{"id": %i, "class": %i, "class_name": "%s", "centroid_x": %f, "centroid_y": %f, ' % (track.id, track.detclass, names[int(track.detclass)], track.centroidarr[-1][0] / im0.shape[1], track.centroidarr[-1][1] / im0.shape[0])
+                        log_output += '{"id": %i, "class": %i, "class_name": "%s", "centroid_x": %f, "centroid_y": %f, ' % (track.customId, track.detclass, names[int(track.detclass)], track.centroidarr[-1][0] / im0.shape[1], track.centroidarr[-1][1] / im0.shape[0])
                         if save_bbox_dim:
                             log_output += '"width": %f, "height": %f}' % (np.abs(track.bbox_history[-1][0] - track.bbox_history[-1][2]) / im0.shape[0], np.abs(track.bbox_history[-1][1] - track.bbox_history[-1][3]) / im0.shape[1])
                         if index + 1 < len(tracks):
@@ -287,7 +287,7 @@ def detect(save_img=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='yolov7.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='yolov7-tiny.pt', help='model.pt path(s)')
     parser.add_argument('--download', action='store_true', help='download model weights automatically')
     parser.add_argument('--no-download', dest='download', action='store_false',help='not download model weights if already exist')
     parser.add_argument('--source', type=str, default='inference/images', help='source')  # file/folder, 0 for webcam
@@ -321,7 +321,7 @@ if __name__ == '__main__':
 
     with torch.no_grad():
         if opt.update:  # update all models (to fix SourceChangeWarning)
-            for opt.weights in ['yolov7.pt']:
+            for opt.weights in ['yolov7-tiny.pt']:
                 detect()
                 strip_optimizer(opt.weights)
         else:

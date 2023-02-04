@@ -6,3 +6,5 @@ lazy val root = (project in file("."))
   .settings(
     name := "raspberry"
   )
+
+libraryDependencies += "org.virtuslab" % "scala-yaml_3" % "0.0.6"
