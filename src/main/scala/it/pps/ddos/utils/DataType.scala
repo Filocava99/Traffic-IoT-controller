@@ -48,3 +48,6 @@ object GivenDataType:
 
   given LongDataType: DataType[Long] with
     override def defaultValue: Long = 0L
+
+  given Tuple2DataType[T: DataType]: DataType[(T, T)] with
+    override def defaultValue: (T, T) = (summon[DataType[T]].defaultValue, summon[DataType[T]].defaultValue)

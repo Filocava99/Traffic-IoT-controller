@@ -22,7 +22,8 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
     "com.typesafe.akka" %% "akka-actor-testkit-typed" % AkkaVersion % Test,
     "com.typesafe.akka" %% "akka-cluster-typed" % AkkaVersion,
-    "com.typesafe.akka" %% "akka-serialization-jackson" % AkkaVersion
+    "com.typesafe.akka" %% "akka-serialization-jackson" % AkkaVersion,
+    "com.github.nscala-time" %% "nscala-time" % "2.32.0"
 )
 
 libraryDependencies += "com.github.Filocava99" % "TuSoW" % "0.8.3"
