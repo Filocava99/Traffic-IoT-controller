@@ -3,7 +3,7 @@ package it.pps.ddos.device.sensor
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import it.pps.ddos.device.sensor.Sensor
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, PropagateStatus, ReceivedAck, SensorMessage, Status, Statuses, Subscribe, Unsubscribe, UpdateStatus}
+import it.pps.ddos.device.DeviceProtocol.{DataCamera, DeviceMessage, Message, PropagateStatus, ReceivedAck, SensorMessage, Status, Statuses, Subscribe, Unsubscribe, UpdateStatus}
 import it.pps.ddos.device.DeviceBehavior
 import it.pps.ddos.device.DeviceBehavior.Tick
 import it.pps.ddos.utils.DataType
@@ -18,15 +18,9 @@ object SensorActor:
 
 class SensorActor[I: DataType, O: DataType](val sensor: Sensor[I, O]):
   private case object TimedSensorKey
-  private case object StoreDataSensorKey
   private def getBasicSensorBehavior(ctx: ActorContext[DeviceMessage]): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case UpdateStatus[I](value) =>
       sensor.update(ctx.self, value)
-      Behaviors.same
-
-  private def getStoreDataSensorBehavior(): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
-    case ReceivedAck(values) =>
-      sensor.asInstanceOf[StoreDataSensor[O]].storedStatus = sensor.asInstanceOf[StoreDataSensor[O]].storedStatus.filter(el => !values.contains(el._1))
       Behaviors.same
 
   /**
@@ -54,10 +48,3 @@ class SensorActor[I: DataType, O: DataType](val sensor: Sensor[I, O]):
     Behaviors.receiveMessagePartial(getBasicSensorBehavior(context)
       .orElse(DeviceBehavior.getBasicBehavior(sensor, context)))
   }
-
-  def dataStorageBehavior(): Behavior[DeviceMessage] =
-    Behaviors.setup { context =>
-        Behaviors.receiveMessagePartial(getBasicSensorBehavior(context)
-          .orElse(DeviceBehavior.getBasicBehavior(sensor, context))
-          .orElse(getStoreDataSensorBehavior()))
-    }

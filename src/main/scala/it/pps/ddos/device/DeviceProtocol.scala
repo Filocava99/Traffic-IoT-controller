@@ -3,6 +3,7 @@ package it.pps.ddos.device
 import akka.actor.typed.ActorRef
 
 import scala.collection.immutable.List
+import com.github.nscala_time.time.Imports._
 
 
 /**
@@ -24,9 +25,11 @@ object DeviceProtocol:
 
   case class UpdateStatus[T](value: T) extends SensorMessage
 
-  case class ReceivedAck[T](values: List[java.time.LocalDateTime]) extends SensorMessage
+  case class DataCamera[T](idCamera: String, localDateTime: DateTime, data: T) extends SensorMessage
 
-  case class SendData[T](value: (T, String)) extends SensorMessage
+  case class ReceivedAck(values: List[String]) extends SensorMessage
+
+  case class SendData[T](value: (T, T)) extends SensorMessage
 
   case class Subscribe[M <: Message](replyTo: ActorRef[M]) extends DeviceMessage
 

@@ -6,13 +6,12 @@ import it.pps.ddos.device.Device
 import it.pps.ddos.device.DeviceProtocol.*
 import it.pps.ddos.utils.{DataType, GivenDataType}
 import it.pps.ddos.utils.GivenDataType.*
-import it.pps.ddos.device.sensor.SensorActor
+import it.pps.ddos.device.sensor.{ SensorActor, StoreDataSensorActor }
 
-import java.time.format.DateTimeFormatter
-import java.time.temporal.{Temporal, TemporalAmount, TemporalField, TemporalUnit}
 import scala.collection.immutable.List
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Random
+import com.github.nscala_time.time.Imports._
 
 /**
  * Abstract definition of sensor
@@ -68,37 +67,26 @@ class ProcessedDataSensor[I: DataType, O: DataType](id: String,
 class StoreDataSensor[O: DataType](id: String,
                                    destinations: List[ActorRef[DeviceMessage]],
                                    processFun: O => O,
-                                   condition: Long => Boolean,
+                                   sendDataConditionTimeInMinutes: Int => Boolean,
                                    replyTo: ActorRef[DeviceMessage]) extends Device[O](id, destinations) with Sensor[O, O]:
-
-  var timeStamp: java.time.LocalDateTime = java.time.LocalDateTime.now()
-
-  // Implementation using a random number as map key
-  // var currentKey: Double = Random.nextDouble()
-  // var storedStatus: Map[Double, List[O]] = Map((currentKey, List.empty))
-
-  // Implementation using the DateTime value as map key
-  var storedStatus: Map[java.time.LocalDateTime, List[O]] = Map((timeStamp, List.empty))
+  private var localDateTime: DateTime = DateTime.now()
+  private var dataStored: Map[String, List[O]] = Map.empty
 
   override def update(selfId: ActorRef[SensorMessage], physicalInput: O): Unit =
-    val currentTime = java.time.LocalDateTime.now()
+    val currentTime = DateTime.now()
+    val localDateTimeFormatted: String = localDateTime.toString("yyyy-MM-dd HH:mm")
     status = Option(preProcess(physicalInput))
-
-    // Implementation using the random number
-    // storedStatus = storedStatus + (currentKey -> (storedStatus(currentKey) :+ preProcess(physicalInput)))
-
-    storedStatus = storedStatus + (timeStamp -> (storedStatus(timeStamp) :+ preProcess(physicalInput)))
-    if condition(currentTime.getMinute - timeStamp.getMinute) then
-      replyTo ! SendData((storedStatus, timeStamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))))
-      println("SENT: " + (storedStatus, timeStamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))))
-      timeStamp = currentTime
-
-      // Implementation using the random number
-      // currentKey = Random.nextDouble()
-      // storedStatus = storedStatus + (currentKey -> List.empty)
-
-      storedStatus = storedStatus + (timeStamp -> List.empty)
-
+    dataStored = dataStored + (localDateTimeFormatted -> (dataStored(localDateTimeFormatted) :+ preProcess(physicalInput)))
+    if sendDataConditionTimeInMinutes(currentTime.minute.get() - localDateTime.minute.get()) then
+      replyTo ! SendData((dataStored, localDateTimeFormatted))
+      println("SENT: " + (dataStored, localDateTimeFormatted))
+      localDateTime = DateTime.now()
 
   override def preProcess: O => O = processFun
-  override def behavior(): Behavior[DeviceMessage] = SensorActor(this).dataStorageBehavior()
+  override def behavior(): Behavior[DeviceMessage] = StoreDataSensorActor(this).behavior()
+  def updateStorage(values: List[String]) = dataStored = dataStored.filter(el => !values.contains(el._1))
+  def data: Map[String, List[O]] = dataStored
+  def currentDateTime: DateTime = localDateTime
+  def timeStamp(localDT: DateTime) =
+    if !dataStored.contains(localDT.toString("yyyy-MM-dd HH:mm")) then
+      dataStored = dataStored + (localDT.toString("yyyy-MM-dd HH:mm") -> List.empty)
