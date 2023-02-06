@@ -50,3 +50,7 @@ Thumbs.db
 /app/
 /.bsp/
 /.idea/
+/ddos/.idea/modules/ddos-build.iml
+/ddos/.bsp/sbt.json
+/raspberry/.idea/modules/raspberry-build.iml
+/raspberry/.bsp/sbt.json
