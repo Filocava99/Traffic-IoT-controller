@@ -6,19 +6,21 @@ import akka.actor.typed.scaladsl.Behaviors
 import it.pps.ddos.device.DeviceProtocol.*
 import it.pps.ddos.device.Public
 import it.pps.ddos.device.sensor.{BasicSensor, Sensor, SensorActor}
-import it.pps.ddos.utils.GivenDataType.given
+import it.pps.ddos.utils.GivenDataType
 import org.scalatest.flatspec.AnyFlatSpec
 import it.pps.ddos.grouping.*
 import org.scalactic.Prettifier.default
 
 import scala.collection.immutable.List
 import scala.concurrent.duration.{Duration, FiniteDuration}
-import com.github.nscala_time.time.Imports._
+import com.github.nscala_time.time.Imports.*
+import org.joda.time.DateTime
 
 class DBGroupTest extends AnyFlatSpec:
   "A DBWriter" should "work" in testDBWriter()
 
   def testDBWriter(): Unit =
-    DBWriter(99, Map(DateTime.now()->Set((0,0),(1,2), (1,2))))
+    val date = DateTime.now()
+    DBWriter(99, Map(date -> Set((0,0),(6,2),(3,2)), date + 3.seconds -> Set((0,322))))
     while(true) {}
 
