@@ -4,7 +4,7 @@ ThisBuild / scalaVersion := "3.2.2"
 
 enablePlugins(AkkaGrpcPlugin)
 
-lazy val root = (project in file("."))
+lazy val ddos = (project in file("."))
   .settings(
     name := "ddos"
   )

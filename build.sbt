@@ -33,3 +33,6 @@ libraryDependencies += "org.scalafx" %% "scalafx" % "19.0.0-R30"
 
 lazy val ddos = (project in file("ddos"))
 lazy val raspberry = (project in file("raspberry")).dependsOn(ddos)
+
+lazy val root = (project in file("."))
+  .aggregate(ddos, raspberry)
