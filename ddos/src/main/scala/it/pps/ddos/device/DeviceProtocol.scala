@@ -25,11 +25,11 @@ object DeviceProtocol:
 
   case class UpdateStatus[T](value: T) extends SensorMessage
 
-  case class DataCamera[T](idCamera: String, localDateTime: DateTime, data: T) extends SensorMessage
+  case class DataCamera[T](idCamera: Int, localDateTime: DateTime, data: T) extends SensorMessage
 
-  case class ReceivedAck(values: List[String]) extends SensorMessage
+  case class ReceivedAck(value: String) extends SensorMessage
 
-  case class SendData[T](value: (T, T)) extends SensorMessage
+  case class DataOutput[T](timeStamp: String, data: T) extends SensorMessage
 
   case class Subscribe[M <: Message](replyTo: ActorRef[M]) extends DeviceMessage
 
