@@ -19,7 +19,7 @@ import scala.language.postfixOps
 object Deployer:
 
   private final val DEFAULT_PORT = "0"
-  private final val HOSTNAME =  "127.0.0.1"
+  private final val HOSTNAME =  "10.201.102.52"
   private final val SEED_NODES = immutable.List[String]("2551","2552")
   private case class ActorSysWithActor(actorSystem: ActorSystem[InternSpawn], numberOfActorSpawned: Int)
 

@@ -15,6 +15,7 @@ import scala.collection.immutable.List
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import com.github.nscala_time.time.Imports.*
 import org.joda.time.DateTime
+import it.pps.ddos.DBWriter
 
 class DBGroupTest extends AnyFlatSpec:
   "A DBWriter" should "work" in testDBWriter()

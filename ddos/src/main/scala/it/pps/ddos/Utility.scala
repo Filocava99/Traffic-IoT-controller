@@ -1,19 +1,16 @@
 package it.pps.ddos
 
-import java.text.SimpleDateFormat
-import scala.concurrent.{Await, ExecutionContext, Future}
-import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
-import reactivemongo.api.bson.{BSONDocumentReader, BSONDocumentWriter, Macros, document}
+import com.github.nscala_time.time.Imports.*
 import reactivemongo.api.*
-import reactivemongo.api.MongoConnection
-import scala.concurrent.{Await}
-import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success}
-import scala.concurrent.ExecutionContext.Implicits.global
-import reactivemongo.api.bson._
-import reactivemongo.api.commands.WriteResult
+import reactivemongo.api.bson.*
 import reactivemongo.api.bson.collection.BSONCollection
-import com.github.nscala_time.time.Imports._
+import reactivemongo.api.commands.WriteResult
+
+import java.text.SimpleDateFormat
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 case class DBEntry(idCamera: Int, time: DateTime, data: Set[(Int,Int)])
 
@@ -52,9 +49,6 @@ object DBWriter:
         println(s"successfully inserted document with result: $writeResult")
     }
 
-
     writeRes.map(_ => {}) // in this example, do nothing with the success
-
-
 
     println("F2 is COMPLETED")
