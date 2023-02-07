@@ -10,5 +10,5 @@ lazy val raspberry = (project in file("."))
 
 libraryDependencies ++= Seq(
   "org.virtuslab" % "scala-yaml_3" % "0.0.6",
-  "org.reactivemongo" %% "reactivemongo" % "1.1.0-RC7"
+  "com.github.nscala-time" %% "nscala-time" % "2.32.0"
 )
