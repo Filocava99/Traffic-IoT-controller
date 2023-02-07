@@ -70,23 +70,23 @@ class StoreDataSensor[O: DataType](id: String,
                                    sendDataConditionTimeInMinutes: Int => Boolean,
                                    replyTo: ActorRef[DeviceMessage]) extends Device[O](id, destinations) with Sensor[O, O]:
   private var localDateTime: DateTime = DateTime.now()
-  private var dataStored: Map[String, List[O]] = Map.empty
+  private var dataStored: Map[String, O] = Map.empty
 
   override def update(selfId: ActorRef[SensorMessage], physicalInput: O): Unit =
     val currentTime = DateTime.now()
     val localDateTimeFormatted: String = localDateTime.toString("yyyy-MM-dd HH:mm")
     status = Option(preProcess(physicalInput))
-    dataStored = dataStored + (localDateTimeFormatted -> (dataStored(localDateTimeFormatted) :+ preProcess(physicalInput)))
+    dataStored = dataStored + (localDateTimeFormatted -> preProcess(physicalInput))
     if sendDataConditionTimeInMinutes(currentTime.minute.get() - localDateTime.minute.get()) then
-      replyTo ! SendData((dataStored, localDateTimeFormatted))
-      println("SENT: " + (dataStored, localDateTimeFormatted))
+      replyTo ! DataOutput(localDateTimeFormatted, dataStored)
+      println("SENT: " + (localDateTimeFormatted, dataStored))
       localDateTime = DateTime.now()
 
   override def preProcess: O => O = processFun
   override def behavior(): Behavior[DeviceMessage] = StoreDataSensorActor(this).behavior()
-  def updateStorage(values: List[String]) = dataStored = dataStored.filter(el => !values.contains(el._1))
-  def data: Map[String, List[O]] = dataStored
+  def updateStorage(value: String) = dataStored = dataStored.filter(el => !el._1.contains(value))
+  def data: Map[String, O] = dataStored
   def currentDateTime: DateTime = localDateTime
   def timeStamp(localDT: DateTime) =
     if !dataStored.contains(localDT.toString("yyyy-MM-dd HH:mm")) then
-      dataStored = dataStored + (localDT.toString("yyyy-MM-dd HH:mm") -> List.empty)
+      dataStored = dataStored + (localDT.toString("yyyy-MM-dd HH:mm") -> DataType.defaultValue[O])

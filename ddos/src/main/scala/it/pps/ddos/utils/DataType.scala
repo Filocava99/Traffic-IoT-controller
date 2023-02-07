@@ -51,3 +51,6 @@ object GivenDataType:
 
   given Tuple2DataType[T: DataType]: DataType[(T, T)] with
     override def defaultValue: (T, T) = (summon[DataType[T]].defaultValue, summon[DataType[T]].defaultValue)
+    
+  given GenericDataType[T]: DataType[Option[T]] with
+    override def defaultValue: Option[T] = Option.empty 

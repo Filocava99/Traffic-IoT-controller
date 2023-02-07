@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import it.pps.ddos.device.DeviceBehavior
 import it.pps.ddos.device.DeviceBehavior.Tick
-import it.pps.ddos.device.DeviceProtocol.{DataCamera, DeviceMessage, Message, ReceivedAck, SendData, SensorMessage, Status, UpdateStatus}
+import it.pps.ddos.device.DeviceProtocol.{DataCamera, DeviceMessage, Message, ReceivedAck, DataOutput, SensorMessage, Status, UpdateStatus}
 import it.pps.ddos.device.{Device, DeviceProtocol, Public, Timer}
 import org.scalatest.flatspec.AnyFlatSpec
 import it.pps.ddos.utils.GivenDataType.given
@@ -48,11 +48,11 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! DataCamera(Random.nextDouble().toString, DateTime.now(), randNumb)
+      storeDataSensorActor ! DataCamera(1, DateTime.now(), randNumb)
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       if (DateTime.now().minute.get() - storeDataSensor.currentDateTime.minute.get()) == minute + delta then
-        testProbe.expectMessage(SendData((storeDataSensor.data, storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"))))
+        testProbe.expectMessage(DataOutput(storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"), storeDataSensor.data))
 
     println("Stored values: " + storeDataSensor.data)
 
@@ -79,11 +79,11 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! DataCamera(Random.nextDouble().toString, DateTime.now(), randNumb)
+      storeDataSensorActor ! DataCamera(1, DateTime.now(), randNumb)
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       if (DateTime.now().minute.get() - storeDataSensor.currentDateTime.minute.get()) == minute + delta then
-        testProbe.expectMessage(SendData((storeDataSensor.data, storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"))))
+        testProbe.expectMessage(DataOutput(storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"), storeDataSensor.data))
 
   def testUpdateStoredDataInSensorAfterAck(): Unit =
     val testProbe = testKit.createTestProbe[Message]()
@@ -109,11 +109,11 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! DataCamera(Random.nextDouble().toString, DateTime.now(), randNumb)
+      storeDataSensorActor ! DataCamera(1, DateTime.now(), randNumb)
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       if (DateTime.now().minute.get() - storeDataSensor.currentDateTime.minute.get()) == minute + delta then
-        testProbe.expectMessage(SendData((storeDataSensor.data, storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"))))
+        testProbe.expectMessage(DataOutput(storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"), storeDataSensor.data))
 
     println("Stored values: " + storeDataSensor.data)
 
@@ -122,7 +122,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! ReceivedAck(keyList)
+    storeDataSensorActor ! ReceivedAck(keyList.toString())
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)
@@ -151,11 +151,11 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! DataCamera(Random.nextDouble().toString, DateTime.now(), randNumb)
+      storeDataSensorActor ! DataCamera(1, DateTime.now(), randNumb)
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       if (DateTime.now().minute.get() - storeDataSensor.currentDateTime.minute.get()) == minute + delta then
-        testProbe.expectMessage(SendData((storeDataSensor.data, storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"))))
+        testProbe.expectMessage(DataOutput(storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"), storeDataSensor.data))
 
     println("Stored values: " + storeDataSensor.data)
 
@@ -164,7 +164,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! ReceivedAck(keyList)
+    storeDataSensorActor ! ReceivedAck(keyList.toString())
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)
@@ -181,11 +181,11 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! DataCamera(Random.nextDouble().toString, DateTime.now(), randNumb)
+      storeDataSensorActor ! DataCamera(1, DateTime.now(), randNumb)
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       if (DateTime.now().minute.get() - storeDataSensor.currentDateTime.minute.get()) == minute + delta then
-        testProbe.expectMessage(SendData((storeDataSensor.data, storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"))))
+        testProbe.expectMessage(DataOutput(storeDataSensor.currentDateTime.toString("yyyy-MM-dd HH:mm"), storeDataSensor.data))
 
     println("Stored values: " + storeDataSensor.data)
 
@@ -194,7 +194,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! ReceivedAck(keyList)
+    storeDataSensorActor ! ReceivedAck(keyList.toString())
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)
