@@ -1,9 +1,13 @@
 import os
+import threading
+
 import cv2
 import time
 import torch
 import argparse
 from pathlib import Path
+
+from flask import Flask, Response
 from numpy import random
 from random import randint
 import torch.backends.cudnn as cudnn
@@ -22,6 +26,18 @@ from utils.download_weights import download
 #For SORT tracking
 import skimage
 from sort import *
+
+global encodedFrame
+global opt
+app = Flask("RaspberryPi Live Feed")
+
+@app.route("/")
+def video_feed():
+	# return the response generated along with the specific media
+	# type (mime type)
+	return Response(encodedFrame,
+		mimetype = "multipart/x-mixed-replace; boundary=frame")
+
 
 #............................... Bounding Boxes Drawing ............................
 """Function to Draw Bounding boxes"""
@@ -249,8 +265,12 @@ def detect(save_img=False):
                 
             # Print time (inference + NMS)
             #print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS', flush=True)
-            
-        
+
+            (flag, outputFrame) = cv2.imencode(".jpg", im0)
+
+            global encodedFrame
+            encodedFrame = b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(outputFrame) + b'\r\n'
+
             # Stream results
             if view_img:
                 cv2.imshow(str(p), im0)
@@ -284,12 +304,28 @@ def detect(save_img=False):
 
     print(f'Done. ({time.time() - t0:.3f}s)')
 
+def main():
+    global opt
+    print(opt)
+    # check_requirements(exclude=('pycocotools', 'thop'))
+    if opt.download and not os.path.exists(str(opt.weights)):
+        print('Model weights not found. Attempting to download now...')
+        download('./')
+
+    with torch.no_grad():
+        if opt.update:  # update all models (to fix SourceChangeWarning)
+            for opt.weights in ['yolov7-tiny.pt']:
+                detect()
+                strip_optimizer(opt.weights)
+        else:
+            detect()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='yolov7-tiny.pt', help='model.pt path(s)')
     parser.add_argument('--download', action='store_true', help='download model weights automatically')
-    parser.add_argument('--no-download', dest='download', action='store_false',help='not download model weights if already exist')
+    parser.add_argument('--no-download', dest='download', action='store_false',
+                        help='not download model weights if already exist')
     parser.add_argument('--source', type=str, default='inference/images', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
@@ -308,21 +344,15 @@ if __name__ == '__main__':
     parser.add_argument('--exist-ok', action='store_true', help='existing project/name ok, do not increment')
     parser.add_argument('--no-trace', action='store_true', help='don`t trace model')
     parser.add_argument('--colored-trk', action='store_true', help='assign different color to every track')
-    parser.add_argument('--save-bbox-dim', action='store_true', help='save bounding box dimensions with --save-txt tracks')
+    parser.add_argument('--save-bbox-dim', action='store_true',
+                        help='save bounding box dimensions with --save-txt tracks')
     parser.add_argument('--save-with-object-id', action='store_true', help='save results with object id to *.txt')
 
     parser.set_defaults(download=True)
+    global opt
     opt = parser.parse_args()
-    print(opt)
-    #check_requirements(exclude=('pycocotools', 'thop'))
-    if opt.download and not os.path.exists(str(opt.weights)):
-        print('Model weights not found. Attempting to download now...')
-        download('./')
+    t = threading.Thread(target=main)
+    t.start()
 
-    with torch.no_grad():
-        if opt.update:  # update all models (to fix SourceChangeWarning)
-            for opt.weights in ['yolov7-tiny.pt']:
-                detect()
-                strip_optimizer(opt.weights)
-        else:
-            detect()
+app.run(host="localhost", port=8080, threaded=True, debug=True)
+
