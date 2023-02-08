@@ -11,7 +11,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 
 type Actor = ActorRef[DeviceMessage]
-type ActorList = List[ActorRef[DeviceMessage]]
+type ActorList = Set[ActorRef[DeviceMessage]]
 
 /**
  * The Group abstract class defines the computation executed for the Devices aggregation.
@@ -21,7 +21,7 @@ type ActorList = List[ActorRef[DeviceMessage]]
  * @tparam I is the input type of the computation.
  * @tparam O is the output type of the computation.
  */
-abstract class Group[I, O](id: String, private val sources: ActorList, destinations: ActorList)
+abstract class Group[I, O](id: String, private val sources: ActorList, destinations: List[Actor])
   extends Device[O](id, destinations) with Public[O] :
   protected var data: Map[Actor, List[I]] = Map.empty
 

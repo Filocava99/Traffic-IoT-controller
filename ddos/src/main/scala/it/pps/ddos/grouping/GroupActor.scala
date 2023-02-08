@@ -3,7 +3,7 @@ package it.pps.ddos.grouping
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import it.pps.ddos.device.DeviceBehavior
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Subscribe, SubscribeAck, Timeout, AddSource}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Subscribe, SubscribeAck, Timeout, AddSource, AddSourceAck}
 
 import scala.collection.immutable.List
 import scala.concurrent.duration.FiniteDuration
@@ -24,7 +24,7 @@ trait GroupActor:
     Behaviors.setup[DeviceMessage] {
       context =>
         if(g.getSources().isEmpty)
-          active(List.empty, g, context, reset)
+          active(Set.empty, g, context, reset)
         else
           g.getSources().foreach(_ ! Subscribe(context.self))
           connecting(g.getSources(), g.copy(), reset)
@@ -46,13 +46,14 @@ trait GroupActor:
           case (Timeout(), _) =>
             sources.foreach(_ ! Subscribe(context.self))
             Behaviors.same
-          case (SubscribeAck(author), sources) if sources.length > 1 =>
+          case (SubscribeAck(author), sources) if sources.size > 1 =>
             connecting(sources.filter(_ != author), g, reset)
-          case (SubscribeAck(author), sources) if sources.contains(author) =>
+          case (SubscribeAck(author: Actor), sources) if sources.contains(author) =>
             timer.cancel("connectingStateTimer")
             active(g.getSources(), g, context, reset)
           case (AddSource(newSource: Actor), sources) =>
-            val newSources = g.getSources() :+ newSource
+            val newSources = g.getSources() + newSource
+            newSource ! AddSourceAck(context.self)
             connecting(newSources, g.copy(newSources), reset)
           case _ =>
             Behaviors.same
@@ -89,5 +90,6 @@ trait GroupActor:
 
   private def getCommonBehavior(context: ActorContext[DeviceMessage], g: Group[_,_], reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case AddSource(newSource: Actor) =>
-      val newSources = g.getSources() :+ newSource
+      val newSources = g.getSources() + newSource
+      newSource ! AddSourceAck(context.self)
       connecting(newSources, g.copy(newSources), reset)

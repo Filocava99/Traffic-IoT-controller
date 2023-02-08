@@ -35,7 +35,7 @@ object Slave:
                    root match
                        case Right(Root(frame, classes, detections)) =>
                            if(DateTime.now().getMinuteOfHour() != dt.getMinuteOfHour())
-                               ddosSensor ! UpdateStatus(new DataStructure(idCamera, dt, detectedObjects))
+                               //ddosSensor ! UpdateStatus(new DataStructure(idCamera, dt, detectedObjects))
                                dt = DateTime.now()
                                detectedObjects = Map[Int, Int](0 -> 0, 1 -> 0, 2 -> 0, 3 -> 0, 5 -> 0, 7 -> 0)
                            val maxIds: Map[Int,Int] = detections.groupBy(_.class_name).map((entry) => (entry._1.toInt, entry._2.map(_.id).max))

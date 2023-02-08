@@ -49,3 +49,5 @@ object DeviceProtocol:
   case class ForceStateChange[T](transition: T) extends ActuatorMessage
 
   case class AddSource[M <: DeviceMessage](newSource: ActorRef[M]) extends GroupMessage
+
+  case class AddSourceAck[M <: DeviceMessage](author: ActorRef[M]) extends GroupMessage

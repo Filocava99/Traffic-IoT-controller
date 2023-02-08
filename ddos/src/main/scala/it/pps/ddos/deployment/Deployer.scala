@@ -120,7 +120,7 @@ object Deployer:
         for {
           (tag, sourceSet) <- groups.map((tag, sources) => (tag, sources.map(id => devicesActorRefMap get id))) if !sourceSet.contains(None)
         } yield {
-          deploy(tag.generateGroup(sourceSet.toList.map(opt => opt.get)))
+          deploy(tag.generateGroup(sourceSet.toSet.map(opt => opt.get)))
           deployedTags = deployedTags + tag
         }
         deployGroups(groups -- deployedTags)

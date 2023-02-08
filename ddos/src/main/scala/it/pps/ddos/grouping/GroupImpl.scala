@@ -17,7 +17,7 @@ import scala.collection.immutable.List
  * @tparam I is the input type of the computation.
  * @tparam O is the output type of the computation.
  */
-class ReduceGroup[I, O](id: String, sources: ActorList, destinations: ActorList, val f: (O, I) => O, val neutralElem: O)
+class ReduceGroup[I, O](id: String, sources: ActorList, destinations: List[Actor], val f: (O, I) => O, val neutralElem: O)
   extends Group[I, O](id, sources, destinations) :
   override def compute(): Unit =
     status = Option(data.values.flatten.toList.foldLeft(neutralElem)(f))
@@ -43,7 +43,7 @@ private trait MultipleOutputs[O]:
  * @tparam I is the input type of the computation.
  * @tparam O is the output type of the computation.
  */
-class MapGroup[I, O](id: String, sources: ActorList, destinations: ActorList, val f: I => O)
+class MapGroup[I, O](id: String, sources: ActorList, destinations: List[Actor], val f: I => O)
   extends Group[I, List[O]](id, sources, destinations) with MultipleOutputs[O] :
   override def compute(): Unit =
     status = Option(

@@ -85,8 +85,8 @@ class TagTest extends AnyFlatSpec:
   private def testGroupEquality(): Unit =
     val f: String => String = s => s
     val tag1: MapTag[String, String] =  tagging.Tag[String, String]("1", List.empty, f, TriggerMode.BLOCKING)
-    val generatedGroup: MapGroup[String, String] = tag1.generateGroup(sensors)
-    val normalGroup: MapGroup[String, String] = new MapGroup[String, String]("1", sensors, List.empty, f)
+    val generatedGroup: MapGroup[String, String] = tag1.generateGroup(sensors.toSet)
+    val normalGroup: MapGroup[String, String] = new MapGroup[String, String]("1", sensors.toSet, List.empty, f)
     assert(generatedGroup.equals(normalGroup))
 
   private def testInverseMarking(): Unit =
