@@ -21,7 +21,7 @@ trait Device[T](val id: String, protected var destinations: List[ActorRef[Device
   protected var status: Option[T] = None
   def propagate(selfId: ActorRef[DeviceMessage], requester: ActorRef[DeviceMessage]): Unit =
     if requester == selfId then status match
-      case Some(value) => for (actor <- destinations) actor ! Status[T](selfId, value); println("SENT: " + value)
+      case Some(value) => for (actor <- destinations) actor ! Status[T](selfId, value)
       case None =>
   def subscribe(selfId: ActorRef[DeviceMessage], toSubscribe: ActorRef[DeviceMessage]): Unit = ()
   def unsubscribe(selfId: ActorRef[DeviceMessage], toUnsubscribe: ActorRef[DeviceMessage]): Unit = ()

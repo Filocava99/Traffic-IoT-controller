@@ -21,15 +21,13 @@ object DeviceProtocol:
 
   case class Statuses[T](author: ActorRef[_ <: Message], value: List[T]) extends Output[List[T]](author, value)
 
-  case class PropagateStatus[M <: Message](requester: ActorRef[M]) extends DeviceMessage
+  case class PropagateStatus[M <: Message](requester: ActorRef[M]) extends SensorMessage
 
   case class UpdateStatus[T](value: T) extends SensorMessage
 
-  case class DataCamera[T](idCamera: Int, localDateTime: DateTime, data: T) extends SensorMessage
+  case class ReceivedAck(key: DateTime) extends SensorMessage
 
-  case class ReceivedAck(value: String) extends SensorMessage
-
-  case class DataOutput[T](timeStamp: String, data: T) extends SensorMessage
+  case class DataOutput[T](timeStamp: DateTime, data: T) extends SensorMessage
 
   case class Subscribe[M <: Message](replyTo: ActorRef[M]) extends DeviceMessage
 
