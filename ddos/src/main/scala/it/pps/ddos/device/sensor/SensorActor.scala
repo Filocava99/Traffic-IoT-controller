@@ -3,7 +3,7 @@ package it.pps.ddos.device.sensor
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import it.pps.ddos.device.sensor.Sensor
-import it.pps.ddos.device.DeviceProtocol.{DataCamera, DeviceMessage, Message, PropagateStatus, ReceivedAck, SensorMessage, Status, Statuses, Subscribe, Unsubscribe, UpdateStatus}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, PropagateStatus, ReceivedAck, SensorMessage, Status, Statuses, Subscribe, Unsubscribe, UpdateStatus}
 import it.pps.ddos.device.DeviceBehavior
 import it.pps.ddos.device.DeviceBehavior.Tick
 import it.pps.ddos.utils.DataType

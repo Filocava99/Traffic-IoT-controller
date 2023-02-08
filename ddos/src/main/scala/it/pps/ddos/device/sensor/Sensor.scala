@@ -66,27 +66,27 @@ class ProcessedDataSensor[I: DataType, O: DataType](id: String,
 
 class StoreDataSensor[O: DataType](id: String,
                                    destinations: List[ActorRef[DeviceMessage]],
-                                   processFun: O => O,
-                                   sendDataConditionTimeInMinutes: Int => Boolean,
-                                   replyTo: ActorRef[DeviceMessage]) extends Device[O](id, destinations) with Sensor[O, O]:
-  private var localDateTime: DateTime = DateTime.now()
-  private var dataStored: Map[String, O] = Map.empty
+                                   processFun: O => O) extends Device[O](id, destinations) with Sensor[O, O]:
+  private var dataStored: Map[DateTime, O] = Map.empty
 
   override def update(selfId: ActorRef[SensorMessage], physicalInput: O): Unit =
-    val currentTime = DateTime.now()
-    val localDateTimeFormatted: String = localDateTime.toString("yyyy-MM-dd HH:mm")
     status = Option(preProcess(physicalInput))
-    dataStored = dataStored + (localDateTimeFormatted -> preProcess(physicalInput))
-    if sendDataConditionTimeInMinutes(currentTime.minute.get() - localDateTime.minute.get()) then
-      replyTo ! DataOutput(localDateTimeFormatted, dataStored)
-      println("SENT: " + (localDateTimeFormatted, dataStored))
-      localDateTime = DateTime.now()
+    dataStored = dataStored + (DateTime.now() -> preProcess(physicalInput))
+    selfId ! PropagateStatus(selfId)
+
+  override def propagate(selfId: ActorRef[DeviceMessage], requester: ActorRef[DeviceMessage]): Unit =
+    if requester == selfId then status match
+      case Some(_) =>
+        for {
+          actor <- destinations
+          (k, v) <- dataStored
+        } yield {
+          actor ! DataOutput(k, v)
+          println("SENT: " + (k, v))
+        }
+      case None =>
 
   override def preProcess: O => O = processFun
   override def behavior(): Behavior[DeviceMessage] = StoreDataSensorActor(this).behavior()
-  def updateStorage(value: String) = dataStored = dataStored.filter(el => !el._1.contains(value))
-  def data: Map[String, O] = dataStored
-  def currentDateTime: DateTime = localDateTime
-  def timeStamp(localDT: DateTime) =
-    if !dataStored.contains(localDT.toString("yyyy-MM-dd HH:mm")) then
-      dataStored = dataStored + (localDT.toString("yyyy-MM-dd HH:mm") -> DataType.defaultValue[O])
+  def updateStorage(key: DateTime) = dataStored = dataStored.filter((k, _) => k != key)
+  def data: Map[DateTime, O] = dataStored
