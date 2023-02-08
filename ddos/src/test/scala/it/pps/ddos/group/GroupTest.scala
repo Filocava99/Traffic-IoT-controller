@@ -24,6 +24,7 @@ class GroupTest extends AnyFlatSpec:
   "A non-blocking group of devices" should "trigger its computation whenever a new value is received from the sources list" in testNonBlockingBehavior()
   it should "reset the stored values if the a 'true' value is passed in the apply method" in testNonBlockingWithReset()
   "A ReduceGroup" should "reduce the whole list of values in an aggregated single value" in testReduce()
+  "A Group" should "reset itself reinitializing with a new set of sources" in testDynamicSources()
 
   val testKit: ActorTestKit = ActorTestKit()
 
@@ -136,3 +137,14 @@ class GroupTest extends AnyFlatSpec:
     Thread.sleep(500)
     for s <- sensors yield s ! PropagateStatus(testProbe.ref); Thread.sleep(500)
     testProbe.expectMessage(Status(toUppercaseActor, " | status of sensor | status of sensor | status of sensor"))
+
+  private def testDynamicSources(): Unit =
+    resetVariables()
+    val toUppercaseActor = testKit.spawn(BlockingGroup(new ReduceGroup[String, String]("id", List.empty, List(testProbe.ref), _ + " | " + _, "")))
+    for s <- sensors yield toUppercaseActor ! AddSource(s)
+    Thread.sleep(3000)
+    for s <- sensors yield s ! UpdateStatus("status of sensor")
+    Thread.sleep(500)
+    for s <- sensors yield s ! PropagateStatus(testProbe.ref); Thread.sleep(500)
+    testProbe.expectMessage(Status(toUppercaseActor, " | status of sensor | status of sensor | status of sensor"))
+

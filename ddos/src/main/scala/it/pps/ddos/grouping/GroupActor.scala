@@ -3,7 +3,7 @@ package it.pps.ddos.grouping
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import it.pps.ddos.device.DeviceBehavior
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Subscribe, SubscribeAck, Timeout}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Subscribe, SubscribeAck, Timeout, AddSource}
 
 import scala.collection.immutable.List
 import scala.concurrent.duration.FiniteDuration
@@ -23,8 +23,11 @@ trait GroupActor:
   def apply(g: Group[_,_], reset: Boolean = false): Behavior[DeviceMessage] =
     Behaviors.setup[DeviceMessage] {
       context =>
-        g.getSources().foreach(_ ! Subscribe(context.self))
-        connecting(g.getSources(), g.copy(), reset)
+        if(g.getSources().isEmpty)
+          active(List.empty, g, context, reset)
+        else
+          g.getSources().foreach(_ ! Subscribe(context.self))
+          connecting(g.getSources(), g.copy(), reset)
     }
 
 
@@ -37,7 +40,7 @@ trait GroupActor:
    */
   protected def connecting(sources: ActorList, g: Group[_,_], reset: Boolean): Behavior[DeviceMessage] =
     Behaviors.withTimers[DeviceMessage] { timer =>
-      timer.startTimerAtFixedRate("connectingStateTimer", Timeout(), FiniteDuration(3, "second"))
+      timer.startTimerAtFixedRate("connectingStateTimer", Timeout(), FiniteDuration(1, "second"))
       Behaviors.receivePartial { (context, message) =>
         (message, sources) match
           case (Timeout(), _) =>
@@ -48,6 +51,9 @@ trait GroupActor:
           case (SubscribeAck(author), sources) if sources.contains(author) =>
             timer.cancel("connectingStateTimer")
             active(g.getSources(), g, context, reset)
+          case (AddSource(newSource: Actor), sources) =>
+            val newSources = g.getSources() :+ newSource
+            connecting(newSources, g.copy(newSources), reset)
           case _ =>
             Behaviors.same
       }
@@ -62,7 +68,9 @@ trait GroupActor:
    * @return the corresponding behavior.
    */
   protected def active(sources: ActorList, g: Group[_,_], context: ActorContext[DeviceMessage], reset: Boolean): Behavior[DeviceMessage] =
-    Behaviors.receiveMessagePartial(getTriggerBehavior(context, g, sources, reset).orElse(DeviceBehavior.getBasicBehavior(g, context)))
+    Behaviors.receiveMessagePartial(getCommonBehavior(context, g, reset)
+      .orElse(getTriggerBehavior(context, g, sources, reset)
+        .orElse(DeviceBehavior.getBasicBehavior(g, context))))
 
   /**
    * is the method to override to provide a trigger strategy for the inpur gathering and computation timing.
@@ -78,3 +86,8 @@ trait GroupActor:
                               g: Group[I,O],
                               sources: ActorList,
                               reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]]
+
+  private def getCommonBehavior(context: ActorContext[DeviceMessage], g: Group[_,_], reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
+    case AddSource(newSource: Actor) =>
+      val newSources = g.getSources() :+ newSource
+      connecting(newSources, g.copy(newSources), reset)

@@ -50,7 +50,7 @@ abstract class Group[I, O](id: String, private val sources: ActorList, destinati
    * Clone this instance of Group.
    * @return a new instance of Group parametrized in the same way.
    */
-  def copy(): Group[I,O]
+  def copy(newSources: ActorList = this.sources): Group[I,O]
 
   private def canEqual(a: Any) = a.isInstanceOf[Group[_,_]]
 

@@ -12,6 +12,7 @@ object DeviceProtocol:
   trait DeviceMessage extends Message
   trait SensorMessage extends DeviceMessage
   trait ActuatorMessage extends DeviceMessage
+  trait GroupMessage extends DeviceMessage
 
   abstract class Output[T](author: ActorRef[_ <: Message], value: T) extends SensorMessage, ActuatorMessage
 
@@ -46,3 +47,5 @@ object DeviceProtocol:
   case class Stop() extends ActuatorMessage
 
   case class ForceStateChange[T](transition: T) extends ActuatorMessage
+
+  case class AddSource[M <: DeviceMessage](newSource: ActorRef[M]) extends GroupMessage

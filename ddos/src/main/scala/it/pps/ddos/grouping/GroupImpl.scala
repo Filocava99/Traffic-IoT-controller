@@ -22,7 +22,7 @@ class ReduceGroup[I, O](id: String, sources: ActorList, destinations: ActorList,
   override def compute(): Unit =
     status = Option(data.values.flatten.toList.foldLeft(neutralElem)(f))
 
-  override def copy(): ReduceGroup[I, O] = new ReduceGroup(id, sources, destinations, f, neutralElem)
+  override def copy(newSources: ActorList = this.sources): ReduceGroup[I, O] = new ReduceGroup(id, newSources, destinations, f, neutralElem)
 
   override def hashCode(): Int =
     id.hashCode() + sources.hashCode() + destinations.hashCode() + f.hashCode() + neutralElem.hashCode()
@@ -53,7 +53,7 @@ class MapGroup[I, O](id: String, sources: ActorList, destinations: ActorList, va
       } yield f(elem)
     )
 
-  override def copy(): MapGroup[I,O] = new MapGroup(id, sources, destinations, f)
+  override def copy(newSources: ActorList = this.sources): MapGroup[I,O] = new MapGroup(id, newSources, destinations, f)
 
   override def hashCode(): Int =
     id.hashCode() + sources.hashCode() + destinations.hashCode() + f.hashCode()

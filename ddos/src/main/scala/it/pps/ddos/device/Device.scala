@@ -50,7 +50,7 @@ trait Public[T]:
   override def subscribe(selfId: ActorRef[DeviceMessage], toSubscribe: ActorRef[DeviceMessage]): Unit =
     if !(destinations contains toSubscribe) then
       destinations = toSubscribe :: destinations
-      toSubscribe ! SubscribeAck(selfId)
+    toSubscribe ! SubscribeAck(selfId)
 
   override def unsubscribe(selfId: ActorRef[DeviceMessage], toUnsubscribe: ActorRef[DeviceMessage]): Unit =
     destinations = destinations.filter(_ != toUnsubscribe)
