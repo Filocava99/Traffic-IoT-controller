@@ -24,6 +24,7 @@ class GroupTest extends AnyFlatSpec:
   "A non-blocking group of devices" should "trigger its computation whenever a new value is received from the sources list" in testNonBlockingBehavior()
   it should "reset the stored values if the a 'true' value is passed in the apply method" in testNonBlockingWithReset()
   "A ReduceGroup" should "reduce the whole list of values in an aggregated single value" in testReduce()
+  "A Group" should "reset itself reinitializing with a new set of sources" in testDynamicSources()
 
   val testKit: ActorTestKit = ActorTestKit()
 
@@ -60,7 +61,7 @@ class GroupTest extends AnyFlatSpec:
 
   private def testBasicFunctionality(): Unit =
     resetVariables()
-    val toUppercaseActor = testKit.spawn(BlockingGroup(new MapGroup[String, String]("id", sensors, List(determinizer), f => f.toUpperCase )))
+    val toUppercaseActor = testKit.spawn(BlockingGroup(new MapGroup[String, String]("id", sensors.toSet, List(determinizer), f => f.toUpperCase )))
     Thread.sleep(500)
     sensors.foreach(s => s ! PropagateStatus(testProbe.ref))
     testProbe.expectMessage(Status(toUppercaseActor.ref, List("STATUS OF SENSOR 1", "STATUS OF SENSOR 2", "STATUS OF SENSOR 3")))
@@ -71,16 +72,16 @@ class GroupTest extends AnyFlatSpec:
     var sensors: List[ActorRef[DeviceMessage]] = prepareDevicesList(3)
 
     val labelAGroup = testKit.spawn(BlockingGroup(
-      new MapGroup[String, LabeledValue]("id", List(sensors(0), sensors(2)), List.empty, f => LabeledValue("label-a", f.toUpperCase))
+      new MapGroup[String, LabeledValue]("id", Set(sensors(0), sensors(2)), List.empty, f => LabeledValue("label-a", f.toUpperCase))
     ))
 
     val labelBGroup = testKit.spawn(BlockingGroup(
-      new MapGroup[String, LabeledValue]("id", List(sensors(1)), List.empty, f => LabeledValue("label-b", f))
+      new MapGroup[String, LabeledValue]("id", Set(sensors(1)), List.empty, f => LabeledValue("label-b", f))
     ))
 
     Thread.sleep(500)
     val toUppercaseActor = testKit.spawn(BlockingGroup(
-      new MapGroup[LabeledValue, String]("id", List(labelAGroup, labelBGroup),  List(determinizer), f => f.label + " " + f.value.toUpperCase)
+      new MapGroup[LabeledValue, String]("id", Set(labelAGroup, labelBGroup),  List(determinizer), f => f.label + " " + f.value.toUpperCase)
     ))
 
     Thread.sleep(500)
@@ -91,14 +92,14 @@ class GroupTest extends AnyFlatSpec:
 
   private def testBlockingBehavior(): Unit =
     resetVariables()
-    val toUppercaseActor = testKit.spawn(BlockingGroup(new MapGroup[String, String]("id", sensors, List(determinizer), f => f.toUpperCase )))
+    val toUppercaseActor = testKit.spawn(BlockingGroup(new MapGroup[String, String]("id", sensors.toSet, List(determinizer), f => f.toUpperCase )))
     Thread.sleep(500)
     for i <- 0 to 1 yield sensors(i) ! PropagateStatus(testProbe.ref)
     testProbe.expectNoMessage(FiniteDuration(2, "second"))
 
   private def testUpdatingValues(): Unit =
     resetVariables()
-    val toUppercaseActor = testKit.spawn(BlockingGroup(new MapGroup[String, String]("id", sensors, List(determinizer), f => f.toUpperCase )))
+    val toUppercaseActor = testKit.spawn(BlockingGroup(new MapGroup[String, String]("id", sensors.toSet, List(determinizer), f => f.toUpperCase )))
     Thread.sleep(500)
     for i <- 0 to 1 yield sensors(i) ! PropagateStatus(testProbe.ref) //first sensor stored status = "status of sensor 1"
     Thread.sleep(100)
@@ -111,7 +112,7 @@ class GroupTest extends AnyFlatSpec:
 
   private def testNonBlockingBehavior(): Unit =
     resetVariables()
-    val toUppercaseActor = testKit.spawn(NonBlockingGroup(new MapGroup[String, String]("id", sensors, List(determinizer), f => f.toUpperCase )))
+    val toUppercaseActor = testKit.spawn(NonBlockingGroup(new MapGroup[String, String]("id", sensors.toSet, List(determinizer), f => f.toUpperCase )))
     Thread.sleep(500)
     sensors(0) ! PropagateStatus(testProbe.ref)
     testProbe.expectMessage(Status(toUppercaseActor, List("STATUS OF SENSOR 1")))
@@ -121,7 +122,7 @@ class GroupTest extends AnyFlatSpec:
 
   private def testNonBlockingWithReset(): Unit =
     resetVariables()
-    val toUppercaseActor = testKit.spawn(NonBlockingGroup(new MapGroup[String, String]("id", sensors, List(determinizer), f => f.toUpperCase ), true))
+    val toUppercaseActor = testKit.spawn(NonBlockingGroup(new MapGroup[String, String]("id", sensors.toSet, List(determinizer), f => f.toUpperCase ), true))
     Thread.sleep(500)
     sensors(0) ! PropagateStatus(testProbe.ref)
     testProbe.expectMessage(Status(toUppercaseActor, List("STATUS OF SENSOR 1")))
@@ -131,8 +132,19 @@ class GroupTest extends AnyFlatSpec:
 
   private def testReduce(): Unit =
     resetVariables()
-    val toUppercaseActor = testKit.spawn(BlockingGroup(new ReduceGroup[String, String]("id", sensors, List(testProbe.ref), _ + " | " + _, "")))
+    val toUppercaseActor = testKit.spawn(BlockingGroup(new ReduceGroup[String, String]("id", sensors.toSet, List(testProbe.ref), _ + " | " + _, "")))
     for s <- sensors yield s ! UpdateStatus("status of sensor")
     Thread.sleep(500)
     for s <- sensors yield s ! PropagateStatus(testProbe.ref); Thread.sleep(500)
     testProbe.expectMessage(Status(toUppercaseActor, " | status of sensor | status of sensor | status of sensor"))
+
+  private def testDynamicSources(): Unit =
+    resetVariables()
+    val toUppercaseActor = testKit.spawn(BlockingGroup(new ReduceGroup[String, String]("id", Set.empty, List(testProbe.ref), _ + " | " + _, "")))
+    for s <- sensors yield toUppercaseActor ! AddSource(s)
+    Thread.sleep(3000)
+    for s <- sensors yield s ! UpdateStatus("status of sensor")
+    Thread.sleep(500)
+    for s <- sensors yield s ! PropagateStatus(testProbe.ref); Thread.sleep(500)
+    testProbe.expectMessage(Status(toUppercaseActor, " | status of sensor | status of sensor | status of sensor"))
+

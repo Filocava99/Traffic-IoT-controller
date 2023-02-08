@@ -27,19 +27,19 @@ abstract class Tag[I,O](val id: String) extends Taggable:
    * @param sources is the list of akka ActorRef[Message] that will become the Group instance input sources.
    * @return a Group instance parametrized with the Tag fields and with the sources parameter actor list as source of input,
    */
-  def generateGroup(sources: ActorList): Group[I,O]
+  def generateGroup(sources: ActorSet): Group[I,O]
 
 /**
  * Concrete Creator in the factory pattern for the Group generation.
  */
-case class MapTag[I,O](override val id: String, val dest: ActorList, val f: I => O, val tm: TriggerMode) extends Tag[I, List[O]](id):
-  override def generateGroup(sources: ActorList): MapGroup[I,O] = new MapGroup(id, sources, dest, f) with Deployable[I,List[O]](tm)
+case class MapTag[I,O](override val id: String, val dest: List[Actor], val f: I => O, val tm: TriggerMode) extends Tag[I, List[O]](id):
+  override def generateGroup(sources: ActorSet): MapGroup[I,O] = new MapGroup(id, sources, dest, f) with Deployable[I,List[O]](tm)
 
 /**
  * Concrete Creator in the factory pattern for the Group generation.
  */
-case class ReduceTag[I,O](override val id: String, val dest: ActorList, val f: (O, I) => O, val neutralElem: O, val tm: TriggerMode) extends Tag[I,O](id):
-  override def generateGroup(sources: ActorList): ReduceGroup[I,O] = new ReduceGroup(id, sources, dest, f, neutralElem) with Deployable[I,O](tm)
+case class ReduceTag[I,O](override val id: String, val dest: List[Actor], val f: (O, I) => O, val neutralElem: O, val tm: TriggerMode) extends Tag[I,O](id):
+  override def generateGroup(sources: ActorSet): ReduceGroup[I,O] = new ReduceGroup(id, sources, dest, f, neutralElem) with Deployable[I,O](tm)
 
 object Tag:
   /**
@@ -53,7 +53,7 @@ object Tag:
    * @tparam O is the type of output of the group.
    * @return a MapTag instance that will generate a MapGroup as result of generateGroup method.
    */
-  def apply[I,O](id: String, dest: ActorList, f: I => O, tm: TriggerMode): MapTag[I,O] = new MapTag[I,O](id, dest: ActorList, f, tm)
+  def apply[I,O](id: String, dest: List[Actor], f: I => O, tm: TriggerMode): MapTag[I,O] = new MapTag[I,O](id, dest, f, tm)
 
   /**
    * Creates a new Tag instance with the given parameters. A Tag is a factory generator for a particular Deployable Group instance.
@@ -67,4 +67,4 @@ object Tag:
    * @tparam O is the type of output of the group.
    * @return a ReduceTag instance that will generate a ReduceGroup as result of generateGroup method.
    */
-  def apply[I,O](id: String, dest: ActorList, f: (O, I) => O, neutralElem: O, tm: TriggerMode): ReduceTag[I,O] = ReduceTag(id, dest: ActorList, f, neutralElem, tm)
+  def apply[I,O](id: String, dest: List[Actor], f: (O, I) => O, neutralElem: O, tm: TriggerMode): ReduceTag[I,O] = ReduceTag(id, dest, f, neutralElem, tm)

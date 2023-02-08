@@ -11,11 +11,11 @@ import scala.collection.immutable.List
  * then reset the stored values to start anew.
  */
 object BlockingGroup extends GroupActor:
-  private case class CrossOut(source: ActorRef[_ <: Message]) extends DeviceMessage
+  private case class CrossOut(source: ActorRef[_ <: DeviceMessage]) extends DeviceMessage
 
   override def getTriggerBehavior[I,O](context: ActorContext[DeviceMessage],
                                        g: Group[I,O],
-                                       sources: ActorList,
+                                       sources: ActorSet,
                                        reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case Status[I](author, value) =>
       context.self ! Statuses(author, List(value))
@@ -24,9 +24,9 @@ object BlockingGroup extends GroupActor:
       g.insert(author, value)
       context.self ! CrossOut(author)
       Behaviors.same
-    case CrossOut(source) if sources.length > 1 =>
+    case CrossOut(source) if sources.size > 1 =>
       active(sources.filter(_ != source), g, context, reset)
-    case CrossOut(source) if sources.contains(source) =>
+    case CrossOut(source: Actor) if sources.contains(source) =>
       g.compute(); g.reset()
       context.self ! PropagateStatus(context.self)
       active(g.getSources(), g, context, reset)
@@ -38,7 +38,7 @@ object BlockingGroup extends GroupActor:
 object NonBlockingGroup extends GroupActor:
   override def getTriggerBehavior[I,O](context: ActorContext[DeviceMessage],
                                        g: Group[I,O],
-                                       sources: ActorList,
+                                       sources: ActorSet,
                                        reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case Status[I](author, value) =>
       context.self ! Statuses(author, List(value))

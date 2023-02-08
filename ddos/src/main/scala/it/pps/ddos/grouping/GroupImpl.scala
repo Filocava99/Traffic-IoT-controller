@@ -17,12 +17,12 @@ import scala.collection.immutable.List
  * @tparam I is the input type of the computation.
  * @tparam O is the output type of the computation.
  */
-class ReduceGroup[I, O](id: String, sources: ActorList, destinations: ActorList, val f: (O, I) => O, val neutralElem: O)
+class ReduceGroup[I, O](id: String, sources: ActorSet, destinations: List[Actor], val f: (O, I) => O, val neutralElem: O)
   extends Group[I, O](id, sources, destinations) :
   override def compute(): Unit =
     status = Option(data.values.flatten.toList.foldLeft(neutralElem)(f))
 
-  override def copy(): ReduceGroup[I, O] = new ReduceGroup(id, sources, destinations, f, neutralElem)
+  override def copy(newSources: ActorSet = this.sources): ReduceGroup[I, O] = new ReduceGroup(id, newSources, destinations, f, neutralElem)
 
   override def hashCode(): Int =
     id.hashCode() + sources.hashCode() + destinations.hashCode() + f.hashCode() + neutralElem.hashCode()
@@ -43,7 +43,7 @@ private trait MultipleOutputs[O]:
  * @tparam I is the input type of the computation.
  * @tparam O is the output type of the computation.
  */
-class MapGroup[I, O](id: String, sources: ActorList, destinations: ActorList, val f: I => O)
+class MapGroup[I, O](id: String, sources: ActorSet, destinations: List[Actor], val f: I => O)
   extends Group[I, List[O]](id, sources, destinations) with MultipleOutputs[O] :
   override def compute(): Unit =
     status = Option(
@@ -53,7 +53,7 @@ class MapGroup[I, O](id: String, sources: ActorList, destinations: ActorList, va
       } yield f(elem)
     )
 
-  override def copy(): MapGroup[I,O] = new MapGroup(id, sources, destinations, f)
+  override def copy(newSources: ActorSet = this.sources): MapGroup[I,O] = new MapGroup(id, newSources, destinations, f)
 
   override def hashCode(): Int =
     id.hashCode() + sources.hashCode() + destinations.hashCode() + f.hashCode()
