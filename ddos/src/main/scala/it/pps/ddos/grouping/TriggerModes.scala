@@ -15,7 +15,7 @@ object BlockingGroup extends GroupActor:
 
   override def getTriggerBehavior[I,O](context: ActorContext[DeviceMessage],
                                        g: Group[I,O],
-                                       sources: ActorList,
+                                       sources: ActorSet,
                                        reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case Status[I](author, value) =>
       context.self ! Statuses(author, List(value))
@@ -38,7 +38,7 @@ object BlockingGroup extends GroupActor:
 object NonBlockingGroup extends GroupActor:
   override def getTriggerBehavior[I,O](context: ActorContext[DeviceMessage],
                                        g: Group[I,O],
-                                       sources: ActorList,
+                                       sources: ActorSet,
                                        reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case Status[I](author, value) =>
       context.self ! Statuses(author, List(value))

@@ -9,7 +9,7 @@ import akka.cluster.typed.{Cluster, Join}
 import com.typesafe.config.{Config, ConfigFactory}
 import it.pps.ddos.deployment.graph.Graph
 import it.pps.ddos.device.Device
-import it.pps.ddos.grouping.ActorList
+import it.pps.ddos.grouping.ActorSet
 import it.pps.ddos.grouping.tagging.Tag
 
 import scala.annotation.tailrec

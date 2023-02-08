@@ -38,7 +38,7 @@ trait GroupActor:
    * @param reset is the boolean that defines if the stored values should be resetted after computation.
    * @return the corresponding behavior.
    */
-  protected def connecting(sources: ActorList, g: Group[_,_], reset: Boolean): Behavior[DeviceMessage] =
+  protected def connecting(sources: ActorSet, g: Group[_,_], reset: Boolean): Behavior[DeviceMessage] =
     Behaviors.withTimers[DeviceMessage] { timer =>
       timer.startTimerAtFixedRate("connectingStateTimer", Timeout(), FiniteDuration(1, "second"))
       Behaviors.receivePartial { (context, message) =>
@@ -68,7 +68,7 @@ trait GroupActor:
    * @param reset is the boolean that defines if the stored values should be resetted after computation.
    * @return the corresponding behavior.
    */
-  protected def active(sources: ActorList, g: Group[_,_], context: ActorContext[DeviceMessage], reset: Boolean): Behavior[DeviceMessage] =
+  protected def active(sources: ActorSet, g: Group[_,_], context: ActorContext[DeviceMessage], reset: Boolean): Behavior[DeviceMessage] =
     Behaviors.receiveMessagePartial(getCommonBehavior(context, g, reset)
       .orElse(getTriggerBehavior(context, g, sources, reset)
         .orElse(DeviceBehavior.getBasicBehavior(g, context))))
@@ -84,9 +84,9 @@ trait GroupActor:
    * @return a partial function that defines a behavior that will be prepended to the standard Device communication protocol.
    */
   protected def getTriggerBehavior[I,O](context: ActorContext[DeviceMessage],
-                              g: Group[I,O],
-                              sources: ActorList,
-                              reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]]
+                                        g: Group[I,O],
+                                        sources: ActorSet,
+                                        reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]]
 
   private def getCommonBehavior(context: ActorContext[DeviceMessage], g: Group[_,_], reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case AddSource(newSource: Actor) =>

@@ -11,7 +11,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 
 type Actor = ActorRef[DeviceMessage]
-type ActorList = Set[ActorRef[DeviceMessage]]
+type ActorSet = Set[ActorRef[DeviceMessage]]
 
 /**
  * The Group abstract class defines the computation executed for the Devices aggregation.
@@ -21,13 +21,13 @@ type ActorList = Set[ActorRef[DeviceMessage]]
  * @tparam I is the input type of the computation.
  * @tparam O is the output type of the computation.
  */
-abstract class Group[I, O](id: String, private val sources: ActorList, destinations: List[Actor])
+abstract class Group[I, O](id: String, private val sources: ActorSet, destinations: List[Actor])
   extends Device[O](id, destinations) with Public[O] :
   protected var data: Map[Actor, List[I]] = Map.empty
 
   override def behavior(): Behavior[DeviceMessage] = Behaviors.unhandled
 
-  def getSources(): ActorList = sources
+  def getSources(): ActorSet = sources
 
   /**
    * Add a source's values to the computation input.
@@ -50,7 +50,7 @@ abstract class Group[I, O](id: String, private val sources: ActorList, destinati
    * Clone this instance of Group.
    * @return a new instance of Group parametrized in the same way.
    */
-  def copy(newSources: ActorList = this.sources): Group[I,O]
+  def copy(newSources: ActorSet = this.sources): Group[I,O]
 
   private def canEqual(a: Any) = a.isInstanceOf[Group[_,_]]
 
