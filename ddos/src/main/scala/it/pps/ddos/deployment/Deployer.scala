@@ -1,5 +1,9 @@
 package it.pps.ddos.deployment
 
+import akka.util.Timeout
+
+import scala.concurrent.{Future, Await}
+import scala.concurrent.duration.*
 import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.Behaviors
 import com.typesafe.config.{Config, ConfigFactory}
@@ -15,6 +19,7 @@ import it.pps.ddos.grouping.tagging.Tag
 import scala.annotation.tailrec
 import scala.collection.{immutable, mutable}
 import scala.language.postfixOps
+import scala.runtime.Nothing$
 
 object Deployer:
 
@@ -51,6 +56,17 @@ object Deployer:
         Thread.sleep(300)
         orderedActorSystemRefList += ActorSysWithActor(as, 0)
 
+  def getActorRefViaReceptionist(id: String): ActorRef[DeviceMessage] =
+      import akka.actor.typed.scaladsl.AskPattern._     //this import must be scoped to this function
+      implicit val timeout: Timeout = 3.seconds
+
+      implicit val system = orderedActorSystemRefList.head.actorSystem
+      import system.executionContext
+
+      val key: ServiceKey[DeviceMessage] = ServiceKey[DeviceMessage](id)
+      val found: Future[Receptionist.Listing] = system.receptionist.ask(Receptionist.Find(key, _))
+      Await.result(found, 10.seconds).serviceInstances(key).head
+
   private def createActorSystem(id: String): ActorSystem[InternSpawn] =
     ActorSystem(Behaviors.setup(
       context =>
@@ -59,7 +75,7 @@ object Deployer:
             case InternSpawn(id, behavior: Behavior[DeviceMessage]) =>
               val ar: ActorRef[DeviceMessage] = context.spawn(behavior, id)
               devicesActorRefMap = Map((id, ar)) ++ devicesActorRefMap
-              context.system.receptionist ! Receptionist.Register(deviceServiceKey, ar)
+              context.system.receptionist ! Receptionist.Register(ServiceKey[DeviceMessage](id), ar)
               Behaviors.same
         }
     ), id, setupClusterConfig(DEFAULT_PORT))
