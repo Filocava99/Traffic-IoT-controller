@@ -10,13 +10,14 @@ import it.pps.ddos.device.DeviceProtocol.Message
 import it.pps.ddos.device.actuator.{Actuator, BasicState, FSM}
 import it.pps.ddos.device.sensor.BasicSensor
 import org.scalatest.flatspec.AnyFlatSpec
-import it.pps.ddos.utils.GivenDataType.given
+import it.pps.ddos.utils.GivenDataType
 import org.scalatest.matchers.must.Matchers.*
 
 import java.lang.reflect.Field
-import scala.collection.immutable.ListMap
+import scala.collection.immutable.{List, ListMap}
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import it.pps.ddos.utils.GivenDataType.DoubleDataType
 
 class DeployerTest extends AnyFlatSpec:
   //STANDARD DEPLOYER START SHARED
@@ -100,6 +101,18 @@ class DeployerTest extends AnyFlatSpec:
         map.size must be (8)
       case _ =>
     }
+  }
+
+  "The deployer" should "use the receptionist to find actors in cluster based on their ids " in {
+    Thread.sleep(2000)
+    val sensorA = new BasicSensor[Double]("id2", List.empty)
+    val graph = Graph[Device[Double]](
+      sensorA -> sensorA
+    )
+    Deployer.deploy(graph)
+    Thread.sleep(500)
+    val result = Deployer.getActorRefViaReceptionist("id2")
+    assert(result == Deployer.getDevicesActorRefMap("id2"))
   }
 
 
