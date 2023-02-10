@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import it.pps.ddos.device.DeviceBehavior
 import it.pps.ddos.device.DeviceBehavior.Tick
-import it.pps.ddos.device.DeviceProtocol.{DataOutput, DeviceMessage, Message, PropagateStatus, ReceivedAck, SensorMessage, Status, UpdateStatus}
+import it.pps.ddos.device.DeviceProtocol.{AckedStatus, DeviceMessage, Message, PropagateStatus, StatusAck, SensorMessage, Status, UpdateStatus}
 import it.pps.ddos.device.{Device, DeviceProtocol, Public, Timer}
 import org.scalatest.flatspec.AnyFlatSpec
 import it.pps.ddos.utils.GivenDataType.given
@@ -56,7 +56,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
-      testProbe.expectMessageType[DataOutput[DataCamera]]
+      testProbe.expectMessageType[AckedStatus[DataCamera]]
 
     println("Stored values: " + storeDataSensor.data)
 
@@ -83,7 +83,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
-      testProbe.expectMessageType[DataOutput[DataCamera]]
+      testProbe.expectMessageType[AckedStatus[DataCamera]]
 
 
   def testUpdateStoredDataInSensorAfterAck(): Unit =
@@ -110,7 +110,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
-      testProbe.expectMessageType[DataOutput[DataCamera]]
+      testProbe.expectMessageType[AckedStatus[DataCamera]]
 
     println("Stored values: " + storeDataSensor.data)
 
@@ -119,7 +119,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList.last)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! ReceivedAck(keyList.last)
+    storeDataSensorActor ! StatusAck(keyList.last)
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)
@@ -148,7 +148,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
-      testProbe.expectMessageType[DataOutput[DataCamera]]
+      testProbe.expectMessageType[AckedStatus[DataCamera]]
 
     println("Stored values: " + storeDataSensor.data)
 
@@ -157,7 +157,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList.last)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! ReceivedAck(keyList.last)
+    storeDataSensorActor ! StatusAck(keyList.last)
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)
@@ -177,7 +177,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
-      testProbe.expectMessageType[DataOutput[DataCamera]]
+      testProbe.expectMessageType[AckedStatus[DataCamera]]
 
     println("Stored values: " + storeDataSensor.data)
 
@@ -186,7 +186,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList.last)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! ReceivedAck(keyList.last)
+    storeDataSensorActor ! StatusAck(keyList.last)
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)

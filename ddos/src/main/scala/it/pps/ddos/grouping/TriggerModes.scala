@@ -17,9 +17,6 @@ object BlockingGroup extends GroupActor:
                                        g: Group[I,O],
                                        sources: ActorSet,
                                        reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
-    case Status[I](author, value) =>
-      context.self ! Statuses(author, List(value))
-      Behaviors.same
     case Statuses[I](author: Actor, value) if g.getSources().contains(author) =>
       g.insert(author, value)
       context.self ! CrossOut(author)

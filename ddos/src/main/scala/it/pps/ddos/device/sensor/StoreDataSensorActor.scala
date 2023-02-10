@@ -4,7 +4,7 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import it.pps.ddos.device.DeviceBehavior
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, PropagateStatus, ReceivedAck, SensorMessage, Status}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, PropagateStatus, StatusAck, SensorMessage, Status}
 import it.pps.ddos.utils.DataType
 import com.github.nscala_time.time.Imports.*
 
@@ -18,7 +18,7 @@ class StoreDataSensorActor[O: DataType](val sensor: StoreDataSensor[O]):
     case Status(ref, data: O) =>
       sensor.update(ctx.self, data)
       Behaviors.same
-    case ReceivedAck(key) =>
+    case StatusAck(key) =>
       sensor.updateStorage(key)
       Behaviors.same
     case PropagateStatus[DeviceMessage](selfRef) =>

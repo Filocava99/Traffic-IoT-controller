@@ -81,8 +81,7 @@ class StoreDataSensor[O: DataType](id: String,
           actor <- destinations
           (k, v) <- dataStored
         } yield {
-          actor ! DataOutput(k, v)
-          println("SENT: " + (k, v))
+          actor ! AckedStatus(selfId, k, v)
         }
       case None =>
 

@@ -3,7 +3,7 @@ package it.pps.ddos.grouping
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import it.pps.ddos.device.DeviceBehavior
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Subscribe, SubscribeAck, Timeout, AddSource, AddSourceAck}
+import it.pps.ddos.device.DeviceProtocol._
 
 import scala.collection.immutable.List
 import scala.concurrent.duration.FiniteDuration
@@ -88,8 +88,15 @@ trait GroupActor:
                                         sources: ActorSet,
                                         reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]]
 
-  private def getCommonBehavior(context: ActorContext[DeviceMessage], g: Group[_,_], reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
+  private def getCommonBehavior[I](context: ActorContext[DeviceMessage], g: Group[I,_], reset: Boolean): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =
     case AddSource(newSource: Actor) =>
       val newSources = g.getSources() + newSource
       newSource ! AddSourceAck(context.self)
       connecting(newSources, g.copy(newSources), reset)
+    case Status[I](author, value) =>
+      context.self ! Statuses(author, List(value))
+      Behaviors.same
+    case AckedStatus[I](author: Actor, key, value) =>
+      context.self ! Status(author, value)
+      author ! StatusAck(key)
+      Behaviors.same

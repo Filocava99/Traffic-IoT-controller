@@ -11,6 +11,7 @@ import it.pps.ddos.utils.GivenDataType.given
 import org.scalatest.flatspec.AnyFlatSpec
 import it.pps.ddos.grouping.*
 import org.scalactic.Prettifier.default
+import com.github.nscala_time.time.Imports.*
 
 import scala.collection.immutable.List
 import scala.concurrent.duration.{Duration, FiniteDuration}
@@ -25,6 +26,7 @@ class GroupTest extends AnyFlatSpec:
   it should "reset the stored values if the a 'true' value is passed in the apply method" in testNonBlockingWithReset()
   "A ReduceGroup" should "reduce the whole list of values in an aggregated single value" in testReduce()
   "A Group" should "reset itself reinitializing with a new set of sources" in testDynamicSources()
+  it should "respond to a source with an ack if said source send an AckedStatus" in testAckedStatus()
 
   val testKit: ActorTestKit = ActorTestKit()
 
@@ -147,4 +149,22 @@ class GroupTest extends AnyFlatSpec:
     Thread.sleep(500)
     for s <- sensors yield s ! PropagateStatus(testProbe.ref); Thread.sleep(500)
     testProbe.expectMessage(Status(toUppercaseActor, " | status of sensor | status of sensor | status of sensor"))
+
+  private def testAckedStatus(): Unit =
+    resetVariables()
+    val testAckKey = DateTime.now()
+    val toUppercaseActor = testKit.spawn(BlockingGroup(new ReduceGroup[String, String]("id", Set.empty, List.empty, _ + " | " + _, "")))
+    Thread.sleep(3000)
+    val dummySensor: Behavior[DeviceMessage] = Behaviors.receivePartial((context, message) =>
+      message match
+        case Subscribe(replyTo: Actor) => replyTo ! SubscribeAck(context.self); Behaviors.same
+        case PropagateStatus(author: Actor) => toUppercaseActor ! AckedStatus(testProbe.ref, testAckKey, ""); Behaviors.same
+        case _ => Behaviors.same
+    )
+    val dummyRef = testKit.spawn(dummySensor)
+    Thread.sleep(3000)
+    toUppercaseActor ! AddSource(dummyRef)
+    Thread.sleep(3000)
+    dummyRef ! PropagateStatus(dummyRef)
+    testProbe.expectMessage(StatusAck(testAckKey))
 
