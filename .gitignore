@@ -54,3 +54,5 @@ Thumbs.db
 /ddos/.bsp/sbt.json
 /raspberry/.idea/modules/raspberry-build.iml
 /raspberry/.bsp/sbt.json
+/client/.idea/modules/
+/server/.idea/modules/server-build.iml

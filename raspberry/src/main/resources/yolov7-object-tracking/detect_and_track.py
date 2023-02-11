@@ -223,23 +223,23 @@ def detect(save_img=False):
                 for track in tracks:
                     # color = compute_color_for_labels(id)
                     #draw colored tracks
-                    if colored_trk:
-                        [cv2.line(im0, (int(track.centroidarr[i][0]),
-                                    int(track.centroidarr[i][1])), 
-                                    (int(track.centroidarr[i+1][0]),
-                                    int(track.centroidarr[i+1][1])),
-                                    rand_color_list[track.id], thickness=2) 
-                                    for i,_ in  enumerate(track.centroidarr) 
-                                      if i < len(track.centroidarr)-1 ] 
+                    # if colored_trk:
+                    #     [cv2.line(im0, (int(track.centroidarr[i][0]),
+                    #                 int(track.centroidarr[i][1])),
+                    #                 (int(track.centroidarr[i+1][0]),
+                    #                 int(track.centroidarr[i+1][1])),
+                    #                 rand_color_list[track.id], thickness=2)
+                    #                 for i,_ in  enumerate(track.centroidarr)
+                    #                   if i < len(track.centroidarr)-1 ]
                     #draw same color tracks
-                    else:
-                        [cv2.line(im0, (int(track.centroidarr[i][0]),
-                                    int(track.centroidarr[i][1])), 
-                                    (int(track.centroidarr[i+1][0]),
-                                    int(track.centroidarr[i+1][1])),
-                                    (255,0,0), thickness=2) 
-                                    for i,_ in  enumerate(track.centroidarr) 
-                                      if i < len(track.centroidarr)-1 ] 
+                    # else:
+                    #     [cv2.line(im0, (int(track.centroidarr[i][0]),
+                    #                 int(track.centroidarr[i][1])),
+                    #                 (int(track.centroidarr[i+1][0]),
+                    #                 int(track.centroidarr[i+1][1])),
+                    #                 (255,0,0), thickness=2)
+                    #                 for i,_ in  enumerate(track.centroidarr)
+                    #                   if i < len(track.centroidarr)-1 ] 
 
                     if save_txt and not save_with_object_id:
                         # Normalize coordinates
@@ -355,4 +355,3 @@ if __name__ == '__main__':
     t.start()
 
 app.run(host="localhost", port=8080, threaded=True, debug=True)
-
