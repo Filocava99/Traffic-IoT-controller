@@ -47,8 +47,10 @@ trait GroupActor:
             sources.foreach(_ ! Subscribe(context.self))
             Behaviors.same
           case (SubscribeAck(author), sources) if sources.size > 1 =>
+            println("SUBSCRIBED: "+author)
             connecting(sources.filter(_ != author), g, reset)
           case (SubscribeAck(author: Actor), sources) if sources.contains(author) =>
+            println("SUBSCRIBED: "+author)
             timer.cancel("connectingStateTimer")
             active(g.getSources(), g, context, reset)
           case (AddSource(newSource: Actor), sources) =>
