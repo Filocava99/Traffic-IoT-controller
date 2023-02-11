@@ -2,8 +2,8 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "3.2.2"
 
-lazy val ddos = (project in file("../ddos"))
-lazy val raspberry = (project in file("."))
+lazy val ddos = RootProject(file("../ddos"))
+lazy val raspbery = (project in file("."))
   .settings(
     name := "raspberry"
   ).dependsOn(ddos).aggregate(ddos)

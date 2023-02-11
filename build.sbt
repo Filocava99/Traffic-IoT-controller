@@ -31,10 +31,10 @@ libraryDependencies += "com.github.Filocava99" % "TuSoW" % "0.8.3"
 // https://mvnrepository.com/artifact/org.scalafx/scalafx
 libraryDependencies += "org.scalafx" %% "scalafx" % "19.0.0-R30"
 
-lazy val ddos = (project in file("ddos"))
-lazy val raspberry = (project in file("raspberry")).dependsOn(ddos).aggregate(ddos)
-lazy val client = (project in file("client")).dependsOn(ddos, raspberry).aggregate(ddos, raspberry)
-lazy val server = (project in file("server")).dependsOn(ddos, raspberry).aggregate(ddos, raspberry)
+lazy val ddos = RootProject(file("./ddos"))
+lazy val raspberry = RootProject(file("./raspberry"))
+lazy val client = RootProject(file("./client"))
+lazy val server = RootProject(file("./server"))
 
 lazy val root = (project in file("."))
-  .aggregate(ddos, raspberry)
+  .aggregate(ddos, raspberry, client, server)
