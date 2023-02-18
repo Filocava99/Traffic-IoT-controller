@@ -50,9 +50,9 @@
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
 
-<VBox prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="662.0" prefWidth="918.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
   <children>
-    <MenuBar VBox.vgrow="NEVER">
+    <MenuBar minWidth="-Infinity" prefHeight="22.0" prefWidth="918.0" VBox.vgrow="NEVER">
       <menus>
         <Menu mnemonicParsing="false" text="File">
           <items>
@@ -91,7 +91,7 @@
         </Menu>
       </menus>
     </MenuBar>
-    <SplitPane dividerPositions="0.2505567928730512, 0.7505567928730512" focusTraversable="true" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
+    <SplitPane dividerPositions="0.2505567928730512" focusTraversable="true" prefHeight="552.0" prefWidth="734.0" VBox.vgrow="ALWAYS">
       <items>
         <AnchorPane>
           <children>
@@ -107,22 +107,22 @@
                   <VBox id="vboxView" layoutX="2.0" layoutY="51.0" prefHeight="494.0" prefWidth="222.0" />
           </children>
         </AnchorPane>
-        <ScrollPane prefHeight="-1.0" prefWidth="-1.0">
+        <ScrollPane>
           <content>
-            <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="430.0">
+            <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="678.0">
               <children>
                 <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Camera live stream" textAlignment="CENTER" textFill="$x2" wrapText="false" />
-                        <MediaView id="mediaView" fitHeight="400.0" fitWidth="400.0" layoutX="115.0" layoutY="59.0" AnchorPane.leftAnchor="15.0" />
+                        <MediaView id="mediaView" fitHeight="270.0" fitWidth="630.0" layoutX="24.0" layoutY="55.0" AnchorPane.leftAnchor="24.0" AnchorPane.rightAnchor="24.399999999999977" />
+                    <AnchorPane layoutY="316.0" prefHeight="289.0" prefWidth="678.0">
+                      <children>
+                        <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Details" textAlignment="CENTER" textFill="$x2" wrapText="false" />
+                              <ListView id="listView" accessibleRole="LIST_ITEM" layoutX="3.0" layoutY="45.0" prefHeight="250.0" prefWidth="670.0" />
+                      </children>
+                    </AnchorPane>
               </children>
             </AnchorPane>
           </content>
         </ScrollPane>
-        <AnchorPane>
-          <children>
-            <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Details" textAlignment="CENTER" textFill="$x2" wrapText="false" />
-                  <ListView id="listView" accessibleRole="LIST_ITEM" layoutX="-1.0" layoutY="52.0" prefHeight="493.0" prefWidth="222.0" />
-          </children>
-        </AnchorPane>
       </items>
     </SplitPane>
     <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
@@ -135,7 +135,7 @@
             <Color blue="0.625" green="0.625" red="0.625" fx:id="x4" />
           </textFill>
         </Label>
-        <Pane id="paneStatusView" prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
+        <Pane id="paneStatusView" prefHeight="14.0" prefWidth="874.0" HBox.hgrow="ALWAYS" />
       </children>
       <padding>
         <Insets bottom="3.0" left="3.0" right="3.0" top="3.0" />
