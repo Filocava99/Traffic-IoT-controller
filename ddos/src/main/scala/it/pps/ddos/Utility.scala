@@ -3,6 +3,7 @@ package it.pps.ddos
 import com.github.nscala_time.time.Imports.*
 import org.joda.time.DateTime
 import it.pps.ddos.DBWriter.{db1, entryCollection}
+import javafx.event.{ActionEvent, Event}
 import reactivemongo.api.*
 import reactivemongo.api.bson.*
 import reactivemongo.api.bson.collection.BSONCollection
@@ -14,6 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
+import scalafx.scene.control.Button
 
 case class DBEntry(idCamera: Int, time: DateTime, data: Set[(Int,Int)])
 
@@ -58,6 +60,7 @@ object DBWriter:
 
 
 object MongoDBFind:
+  private var entries: List[DBEntry] = List.empty
 
   // My settings (see available connection options)
   val mongoUri = "mongodb://localhost:27017"
@@ -84,6 +87,8 @@ object MongoDBFind:
       } yield DBEntry(idCamera, new DateTime(Date(time.value)), data)
     }
 
+  def data: List[DBEntry] = entries
+
   /**
    * Returns all the data in the database
    */
@@ -95,6 +100,7 @@ object MongoDBFind:
     readRes.onComplete { // Dummy callbacks
       case Failure(e) => e.printStackTrace()
       case Success(readResult) =>
+        entries = readResult
         println(s"successfully read with result: $readResult")
     }
 
@@ -111,6 +117,7 @@ object MongoDBFind:
     readRes.onComplete { // Dummy callbacks
       case Failure(e) => e.printStackTrace()
       case Success(readResult) =>
+        entries = readResult
         println(s"successfully read with result: $readResult")
     }
 
