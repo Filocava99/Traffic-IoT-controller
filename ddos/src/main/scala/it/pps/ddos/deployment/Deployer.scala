@@ -24,11 +24,11 @@ import scala.runtime.Nothing$
 object Deployer:
 
   private final val DEFAULT_PORT = "0"
-  private final val HOSTNAME =  "192.168.1.62"
+  private final val HOSTNAME =  "localhost"
   private final val SEED_NODES = immutable.List[String]("2551","2552")
   private case class ActorSysWithActor(actorSystem: ActorSystem[InternSpawn], numberOfActorSpawned: Int)
 
-  private case class InternSpawn(id: String, behavior: Behavior[_ <: Message])
+  case class InternSpawn(id: String, behavior: Behavior[_ <: Message])
 
   private val orderedActorSystemRefList = mutable.ListBuffer.empty[ActorSysWithActor]
   
@@ -53,8 +53,6 @@ object Deployer:
   def addNodes(numberOfNode: Int): Unit =
     for (i <- 1 to numberOfNode)
         val as = createActorSystem("ClusterSystem")
-        Thread.sleep(300)
-        orderedActorSystemRefList += ActorSysWithActor(as, 0)
 
   def getActorRefViaReceptionist(id: String): ActorRef[DeviceMessage] =
       import akka.actor.typed.scaladsl.AskPattern._     //this import must be scoped to this function
@@ -67,8 +65,8 @@ object Deployer:
       val found: Future[Receptionist.Listing] = system.receptionist.ask(Receptionist.Find(key, _))
       Await.result(found, 10.seconds).serviceInstances(key).head
 
-  private def createActorSystem(id: String): ActorSystem[InternSpawn] =
-    ActorSystem(Behaviors.setup(
+  def createActorSystem(id: String): ActorSystem[InternSpawn] =
+    val as = ActorSystem(Behaviors.setup(
       context =>
         Behaviors.receiveMessage { msg =>
           msg match
@@ -79,6 +77,9 @@ object Deployer:
               Behaviors.same
         }
     ), id, setupClusterConfig(DEFAULT_PORT))
+    Thread.sleep(300)
+    orderedActorSystemRefList += ActorSysWithActor(as, 0)
+    as
 
   /**
    * Deploy the graph on the cluster
