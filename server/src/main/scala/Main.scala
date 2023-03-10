@@ -4,8 +4,11 @@ import it.pps.ddos.grouping.*
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import it.pps.ddos.deployment.Deployer.InternSpawn
-import it.sc.server.ServerActor
-import it.sc.server.IdRequest
+import it.pps.ddos.device.DeviceProtocol.Statuses
+import it.sc.server.{IdRequest, ServerActor, StoringActor}
+import reactivemongo.api.bson.BSONObjectID
+import it.sc.server.entities.RecordedData
+import com.github.nscala_time.time.Imports.DateTime
 
 object Main{
   def main(args: Array[String]): Unit =
@@ -16,9 +19,11 @@ object Main{
     as ! InternSpawn("serverTest", ServerActor())
     Thread.sleep(3000)
     val ref = Deployer.getActorRefViaReceptionist("serverTest")
-    println(ref)
-    ref ! IdRequest("via manzoni 5", ref)
-    println("ciao")
-
+    ref ! IdRequest("via manzoni 10", ref)
+    as ! InternSpawn("storingActor", StoringActor())
+    Thread.sleep(3000)
+    val storingRef = Deployer.getActorRefViaReceptionist("storingActor")
+    val fakeCameraId = BSONObjectID.generate()
+    storingRef ! Statuses[RecordedData](ref, List(RecordedData(fakeCameraId, DateTime.now(), Set((1->2), (0->99)))))
 
 }

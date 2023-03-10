@@ -14,6 +14,7 @@ import it.pps.ddos.utils.GivenDataType
 import org.joda.time.DateTime
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalactic.Prettifier.default
+import reactivemongo.api.bson.BSONObjectID
 
 import scalafx.scene.control.Button
 
@@ -50,5 +51,5 @@ class TestDBOperations extends AnyFlatSpec:
     val serverRef = testKit.spawn(ServerActor())
     serverRef ! IdRequest("test", testProbe.ref)
     Thread.sleep(500)
-    testProbe.expectMessage(IdAnswer(UUID.randomUUID()))
+    testProbe.expectMessage(IdAnswer(BSONObjectID.generate()))
 
