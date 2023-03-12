@@ -1,27 +1,24 @@
 package it.sc.server
 
-import concurrent.duration.DurationInt
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior, DispatcherSelector}
 import com.github.nscala_time.time.Imports.DateTime
 import com.typesafe.config.ConfigFactory
 import it.pps.ddos.deployment.Deployer
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Statuses}
 import it.pps.ddos.device.sensor.StoreDataSensor
 import it.pps.ddos.grouping.*
 import it.pps.ddos.grouping.tagging.{Deployable, MapTag, TriggerMode}
+import it.sc.server.entities.RecordedData
 import it.sc.server.{IdAnswer, IdRequest}
-import reactivemongo.api.bson.*
-import reactivemongo.api.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
 import reactivemongo.api.bson.collection.BSONCollection
+import reactivemongo.api.bson.*
 import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
 
+import scala.collection.immutable.List
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
-import it.sc.server.entities.RecordedData
-import it.pps.ddos.device.DeviceProtocol.Statuses
-
-import scala.collection.immutable.List
 
 object StoringActor:
 
