@@ -24,6 +24,6 @@ object Main{
     Thread.sleep(3000)
     val storingRef = Deployer.getActorRefViaReceptionist("storingActor")
     val fakeCameraId = BSONObjectID.generate()
-    storingRef ! Statuses[RecordedData](ref, List(RecordedData(fakeCameraId, DateTime.now(), Set((1->2), (0->99)))))
+    storingRef ! Statuses[RecordedData](ref, List(RecordedData(fakeCameraId, DateTime.now(), Map(1->2, 0->99))))
 
 }

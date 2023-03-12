@@ -37,7 +37,7 @@ lazy val client = RootProject(file("./client"))
 lazy val server = RootProject(file("./server"))
 
 lazy val root = (project in file("."))
-  .aggregate(ddos, raspberry, client, server)
+  .aggregate(ddos, server, raspberry, client)
 
 //lazy val utils = (project in file("utils"))
 //  .settings(

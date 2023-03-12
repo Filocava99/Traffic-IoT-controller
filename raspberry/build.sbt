@@ -3,12 +3,13 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.2.2"
 
 lazy val ddos = RootProject(file("../ddos"))
+lazy val server = RootProject(file("../server"))
 lazy val raspbery = (project in file("."))
   .settings(
       name := "raspberry",
       assembly / mainClass := Some("it.unibo.smartcity.raspberry.Main"),
       assembly / assemblyJarName := "raspberry.jar",
-  ).dependsOn(ddos).aggregate(ddos)
+  ).dependsOn(ddos, server).aggregate(ddos, server)
 
 libraryDependencies ++= Seq(
     "org.virtuslab" % "scala-yaml_3" % "0.0.6",

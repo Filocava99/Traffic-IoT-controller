@@ -12,6 +12,7 @@ import it.pps.ddos.grouping.*
 import it.pps.ddos.grouping.tagging.{Deployable, MapTag, TriggerMode}
 import it.sc.server.{IdAnswer, IdRequest}
 import reactivemongo.api.bson.*
+import reactivemongo.api.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
 import reactivemongo.api.bson.collection.BSONCollection
 import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
 
@@ -27,12 +28,13 @@ object StoringActor:
   // My settings (see available connection options)
   val mongoUri = "mongodb://localhost:27017"
 
+
   // Implicit document writer (scala DBEntry => mongoDB document)
   implicit val entryWriter: BSONDocumentWriter[RecordedData] =
     BSONDocumentWriter[RecordedData] { entry =>
       BSONDocument("idCamera" -> entry.idCamera,
         "timestamp" -> BSONDateTime(entry.timeStamp.toDate.getTime),
-        "data" -> entry.data)
+        "data" -> entry.data.toSet)
     }
 
   def apply(): Behavior[DeviceMessage] =

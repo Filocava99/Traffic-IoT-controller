@@ -6,11 +6,11 @@ Global / scalaVersion := "3.2.2"
 val AkkaVersion = "2.7.0"
 
 lazy val ddos = RootProject(file("../ddos"))
-lazy val raspberry = RootProject(file("../raspberry"))
+
 lazy val server = (project in file("."))
   .settings(
     name := "server"
-  ).dependsOn(ddos, raspberry).aggregate(ddos, raspberry)
+  ).dependsOn(ddos).aggregate(ddos)
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.14" % Test
 libraryDependencies ++= Seq(

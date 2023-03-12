@@ -2,14 +2,15 @@ package it.unibo.smartcity.raspberry
 
 import akka.actor.typed.ActorRef
 import com.github.nscala_time.time.Imports.DateTime
-import it.pps.ddos.device.DeviceProtocol.DeviceMessage
+import it.pps.ddos.device.DeviceProtocol.{UpdateStatus, DeviceMessage}
 import it.unibo.smartcity.raspberry.json.models.Root
 import org.virtuslab.yaml.StringOps
-
+import it.sc.server.entities.RecordedData
+import reactivemongo.api.bson.BSONObjectID
 import java.io.{BufferedReader, InputStreamReader}
 
 object Slave:
-    def apply(ddosSensor: ActorRef[DeviceMessage], idCamera: Int): Unit =
+    def apply(ddosSensor: ActorRef[DeviceMessage], idCamera: BSONObjectID): Unit =
         val pb = new ProcessBuilder(
             "python",
             "-u",
@@ -31,12 +32,11 @@ object Slave:
             var line = bufferedReader.readLine()
             if (line != null)
                 if (line.startsWith("{"))
-                    //println(line)
                     val root = line.as[Root]
                     root match
                         case Right(Root(frame, classes, detections)) =>
                             if (DateTime.now().getMinuteOfHour() != dt.getMinuteOfHour())
-                                //ddosSensor ! UpdateStatus(new DataStructure(idCamera, dt, detectedObjects))
+                                ddosSensor ! UpdateStatus(new RecordedData(idCamera, dt, detectedObjects))
                                 dt = DateTime.now()
                                 detectedObjects = Map[Int, Int](0 -> 0, 1 -> 0, 2 -> 0, 3 -> 0, 5 -> 0, 7 -> 0)
                             val maxIds: Map[Int, Int] = detections.groupBy(_.class_name).map((entry) => (entry._1.toInt, entry._2.map(_.id).max))
