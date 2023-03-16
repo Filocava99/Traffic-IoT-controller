@@ -15,9 +15,9 @@ import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 given RecordedDataType: DataType[RecordedData] with
-  override def defaultValue: RecordedData = RecordedData(BSONObjectID.generate(), DateTime.now(), Map.empty[Int, Int])
+  override def defaultValue: RecordedData = RecordedData(BSONObjectID.generate().stringify, DateTime.now(), Map.empty[Int, Int])
 
-object ServerActor:
+object RaspberryActor:
   def apply(details: String): Behavior[DeviceMessage] =
     Behaviors.setup[DeviceMessage] { context =>
       Behaviors.withTimers[DeviceMessage] { timer =>
@@ -25,16 +25,18 @@ object ServerActor:
         Behaviors.receivePartial { (context, message) =>
           message match
             case Timeout() =>
-              val serverRef = Deployer.getActorRefViaReceptionist("server")
+              val serverRef = Deployer.getActorRefViaReceptionist("serverTest")
+              println("SERVERREF: " + serverRef)
               serverRef ! IdRequest(details, context.self)
               Behaviors.same
-            case IdAnswer(id: BSONObjectID) =>
+            case IdAnswer(id: String) =>
               timer.cancel("connectingStateTimer")
               Thread.sleep(3000)
-              val broadcasterRef = Deployer.getActorRefViaReceptionist("broadcaster-"+id.stringify)
-              Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-"+id.stringify, List(broadcasterRef), x => x))
+              println("IDANSWER RECEIVED: " + id)
+              val broadcasterRef = Deployer.getActorRefViaReceptionist("broadcaster-" + id)
+              Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-" + id, List(broadcasterRef), x => x))
               Thread.sleep(3000)
-              val sensorRef = Deployer.getActorRefViaReceptionist("raspberry-"+id.stringify)
+              val sensorRef = Deployer.getActorRefViaReceptionist("raspberry-" + id)
               Slave(sensorRef, id)
               Behaviors.same
         }

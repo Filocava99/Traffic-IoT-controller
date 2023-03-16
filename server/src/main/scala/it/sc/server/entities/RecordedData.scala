@@ -1,6 +1,5 @@
 package it.sc.server.entities
 
 import com.github.nscala_time.time.Imports.DateTime
-import reactivemongo.api.bson.BSONObjectID
 
-case class RecordedData(idCamera: BSONObjectID, timeStamp: DateTime, data: Map[Int, Int])
+case class RecordedData(idCamera: String, timeStamp: DateTime, data: Map[Int, Int])

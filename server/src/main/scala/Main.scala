@@ -15,15 +15,16 @@ object Main{
     /*Deployer.initSeedNodes()
     Deployer.addNodes(1)
     Deployer.deploy(new MapGroup[Int,String]("id3", Set.empty, List.empty, i=> i.toString ))*/
-    val as = Deployer.createActorSystem("as")
+    Deployer.initSeedNodes()
+    val as = Deployer.createActorSystem("ClusterSystem")
     as ! InternSpawn("serverTest", ServerActor())
     Thread.sleep(3000)
     val ref = Deployer.getActorRefViaReceptionist("serverTest")
-    ref ! IdRequest("via manzoni 10", ref)
+    //ref ! IdRequest("via manzoni 10", ref)
     as ! InternSpawn("storingActor", StoringActor())
     Thread.sleep(3000)
-    val storingRef = Deployer.getActorRefViaReceptionist("storingActor")
+    /*val storingRef = Deployer.getActorRefViaReceptionist("storingActor")
     val fakeCameraId = BSONObjectID.generate()
-    storingRef ! Statuses[RecordedData](ref, List(RecordedData(fakeCameraId, DateTime.now(), Map(1->2, 0->99))))
+    storingRef ! Statuses[RecordedData](ref, List(RecordedData(fakeCameraId, DateTime.now(), Map(1->2, 0->99))))*/
 
 }

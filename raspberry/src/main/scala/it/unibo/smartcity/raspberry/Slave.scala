@@ -10,7 +10,7 @@ import reactivemongo.api.bson.BSONObjectID
 import java.io.{BufferedReader, InputStreamReader}
 
 object Slave:
-    def apply(ddosSensor: ActorRef[DeviceMessage], idCamera: BSONObjectID): Unit =
+    def apply(ddosSensor: ActorRef[DeviceMessage], idCamera: String): Unit =
         val pb = new ProcessBuilder(
             "python",
             "-u",

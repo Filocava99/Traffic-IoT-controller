@@ -51,5 +51,5 @@ class TestDBOperations extends AnyFlatSpec:
     val serverRef = testKit.spawn(ServerActor())
     serverRef ! IdRequest("test", testProbe.ref)
     Thread.sleep(500)
-    testProbe.expectMessage(IdAnswer(BSONObjectID.generate()))
+    testProbe.expectMessage(IdAnswer(BSONObjectID.generate().stringify))
 

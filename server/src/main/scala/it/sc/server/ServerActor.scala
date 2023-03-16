@@ -83,9 +83,8 @@ object ServerActor:
         message match
           case IdRequest(details: String, replyTo: ActorRef[DeviceMessage]) =>
             val id = Await.result(getCameraId(details), 2.seconds)
-            replyTo ! IdAnswer(id)
+            replyTo ! IdAnswer(id.stringify)
             Behaviors.same
-          case IdAnswer(uuid) => println(uuid.stringify); Behaviors.same
           case _ => println("Unknown message"); Behaviors.same
       }
     }
