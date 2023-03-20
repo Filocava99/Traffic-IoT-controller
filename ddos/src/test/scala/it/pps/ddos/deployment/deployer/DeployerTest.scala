@@ -21,7 +21,7 @@ import it.pps.ddos.utils.GivenDataType.DoubleDataType
 
 class DeployerTest extends AnyFlatSpec:
   //STANDARD DEPLOYER START SHARED
-  Deployer.initSeedNodes()
+  Deployer.initSeedNodes("localhost")
   Deployer.addNodes(5)
 
   private def createTestBasicStateSensor(): Graph[Device[Double]] =

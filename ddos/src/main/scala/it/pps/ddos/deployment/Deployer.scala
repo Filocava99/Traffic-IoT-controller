@@ -24,8 +24,8 @@ import scala.runtime.Nothing$
 object Deployer:
 
   private final val DEFAULT_PORT = "0"
-  private final val HOSTNAME =  "localhost"
   private final val SEED_NODES = immutable.List[String]("2551","2552")
+  private final val CLUSTER_KEY = "ClusterSystem"
   private case class ActorSysWithActor(actorSystem: ActorSystem[InternSpawn], numberOfActorSpawned: Int)
 
   case class InternSpawn(id: String, behavior: Behavior[_ <: Message])
@@ -42,17 +42,18 @@ object Deployer:
   /**
    * Initialize the seed nodes and the cluster
    */
-  def initSeedNodes(): Unit =
-    ActorSystem(Behaviors.empty[DeviceMessage], "ClusterSystem", setupClusterConfig("2551"))
-    ActorSystem(Behaviors.empty[DeviceMessage], "ClusterSystem", setupClusterConfig("2552"))
+  def initSeedNodes(seedNodesHostName: String): Unit =
+    ActorSystem(Behaviors.empty[DeviceMessage], "ClusterSystem", setupClusterConfig("2551", seedNodesHostName))
+    ActorSystem(Behaviors.empty[DeviceMessage], "ClusterSystem", setupClusterConfig("2552", seedNodesHostName))
 
   /**
    * Add N nodes to the cluster
    * @param numberOfNode the number of nodes to add
+   * @param seedNodesHostName is the network address where deploy the nodes
    */
-  def addNodes(numberOfNode: Int): Unit =
+  def addNodes(numberOfNode: Int, hostname: String = "localhost"): Unit =
     for (i <- 1 to numberOfNode)
-        val as = createActorSystem("ClusterSystem")
+        val as = createActorSystem(hostname)
 
   def getActorRefViaReceptionist(id: String): ActorRef[DeviceMessage] =
       import akka.actor.typed.scaladsl.AskPattern._     //this import must be scoped to this function
@@ -65,7 +66,8 @@ object Deployer:
       val found: Future[Receptionist.Listing] = system.receptionist.ask(Receptionist.Find(key, _))
       Await.result(found, 10.seconds).serviceInstances(key).head
 
-  def createActorSystem(id: String): ActorSystem[InternSpawn] =
+  def createActorSystem(hostname: String): ActorSystem[InternSpawn] =
+    val id = CLUSTER_KEY
     val as = ActorSystem(Behaviors.setup(
       context =>
         Behaviors.receiveMessage { msg =>
@@ -76,7 +78,7 @@ object Deployer:
               context.system.receptionist ! Receptionist.Register(ServiceKey[DeviceMessage](id), ar)
               Behaviors.same
         }
-    ), id, setupClusterConfig(DEFAULT_PORT))
+    ), id, setupClusterConfig(DEFAULT_PORT, hostname))
     Thread.sleep(300)
     orderedActorSystemRefList += ActorSysWithActor(as, 0)
     as
@@ -115,8 +117,7 @@ object Deployer:
     val tagList = retrieveTagSet(devicesGraph.getNodes())
     deployGroups(tagList.groupMap((tag, id) => tag)((tag, id) => id))
 
-  private def setupClusterConfig(port: String): Config =
-    val hostname = HOSTNAME
+  private def setupClusterConfig(port: String, hostname: String): Config =
     ConfigFactory.parseString(String.format("akka.remote.artery.canonical.hostname = \"%s\"%n", hostname)
       + String.format("akka.remote.artery.canonical.port=" + port + "%n")
       + String.format("akka.management.http.hostname=\"%s\"%n",hostname)

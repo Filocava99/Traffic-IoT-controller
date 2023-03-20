@@ -116,7 +116,7 @@ class TagTest extends AnyFlatSpec:
     sensorA ## addNumber
     sensorB ## toUppercase
 
-    Deployer.initSeedNodes()
+    Deployer.initSeedNodes("localhost")
     Deployer.addNodes(1)
     Thread.sleep(500)
     val graph = Graph[Device[String]](

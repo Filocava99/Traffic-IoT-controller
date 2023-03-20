@@ -25,7 +25,7 @@ object RaspberryActor:
         Behaviors.receivePartial { (context, message) =>
           message match
             case Timeout() =>
-              val serverRef = Deployer.getActorRefViaReceptionist("serverTest")
+              val serverRef = Deployer.getActorRefViaReceptionist("server")
               println("SERVERREF: " + serverRef)
               serverRef ! IdRequest(details, context.self)
               Behaviors.same
@@ -34,7 +34,8 @@ object RaspberryActor:
               Thread.sleep(3000)
               println("IDANSWER RECEIVED: " + id)
               val broadcasterRef = Deployer.getActorRefViaReceptionist("broadcaster-" + id)
-              Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-" + id, List(broadcasterRef), x => x))
+              val storingRef = Deployer.getActorRefViaReceptionist("storing" + id)
+              Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-" + id, List(broadcasterRef, storingRef), x => x))
               Thread.sleep(3000)
               val sensorRef = Deployer.getActorRefViaReceptionist("raspberry-" + id)
               Slave(sensorRef, id)

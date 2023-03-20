@@ -6,21 +6,14 @@ import it.pps.ddos.device.DeviceProtocol.AddSource
 import it.pps.ddos.device.sensor.StoreDataSensor
 import it.pps.ddos.utils.GivenDataType.IntDataType
 import it.unibo.smartcity.raspberry.RaspberryActor
+import java.net.InetAddress
 
 /**
  * Remote instance main program
  */
 object Main{
     def main(args: Array[String]): Unit =
-        /*Deployer.addNodes(1)
-        val idGruppo = Deployer.getActorRefViaReceptionist("id3")
-        val f: Int => Int = _ + 2
-        val sensor = new StoreDataSensor[Int]("raspberry1", List(idGruppo), f)
-        Deployer.deploy(sensor)
-        Thread.sleep(3000)
-        val idRasp = Deployer.getActorRefViaReceptionist("raspberry1")
-        idGruppo ! AddSource(idRasp)
-        while (true) {}*/
-        val as = Deployer.createActorSystem("ClusterSystem")
-        as ! InternSpawn("r1", RaspberryActor("asasasasa"))
+        val rasberryAddress: InetAddress = InetAddress.getLocalHost.getAddress
+        val as = Deployer.createActorSystem(rasberryAddress)
+        as ! InternSpawn("r1", RaspberryActor(args[0]))
 }

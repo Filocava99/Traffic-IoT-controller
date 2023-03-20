@@ -9,19 +9,19 @@ import it.sc.server.{IdRequest, ServerActor, StoringActor}
 import reactivemongo.api.bson.BSONObjectID
 import it.sc.server.entities.RecordedData
 import com.github.nscala_time.time.Imports.DateTime
+import java.net.InetAddress
 
 object Main{
   def main(args: Array[String]): Unit =
-    /*Deployer.initSeedNodes()
-    Deployer.addNodes(1)
-    Deployer.deploy(new MapGroup[Int,String]("id3", Set.empty, List.empty, i=> i.toString ))*/
-    Deployer.initSeedNodes()
-    val as = Deployer.createActorSystem("ClusterSystem")
-    as ! InternSpawn("serverTest", ServerActor())
+    val serverAddress: String = InetAddress.getLocalHost.getHostAddress
+    println(serverAddress)
+    Deployer.initSeedNodes(serverAddress)
+    val as = Deployer.createActorSystem(serverAddress)
+    as ! InternSpawn("server", ServerActor())
     Thread.sleep(3000)
-    val ref = Deployer.getActorRefViaReceptionist("serverTest")
+    val ref = Deployer.getActorRefViaReceptionist("server")
     //ref ! IdRequest("via manzoni 10", ref)
-    as ! InternSpawn("storingActor", StoringActor())
+    as ! InternSpawn("storing", StoringActor())
     Thread.sleep(3000)
     /*val storingRef = Deployer.getActorRefViaReceptionist("storingActor")
     val fakeCameraId = BSONObjectID.generate()
