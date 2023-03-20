@@ -15,5 +15,6 @@ object Main{
     def main(args: Array[String]): Unit =
         val rasberryAddress: InetAddress = InetAddress.getLocalHost.getAddress
         val as = Deployer.createActorSystem(rasberryAddress)
+        Thread.sleep(3000)
         as ! InternSpawn("r1", RaspberryActor(args[0]))
 }
