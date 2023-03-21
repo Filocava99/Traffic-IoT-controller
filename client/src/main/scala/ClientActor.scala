@@ -1,20 +1,25 @@
 import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Status, Subscribe, SubscribeAck, UnsubscribeAck}
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
+import com.github.nscala_time.time.Imports.DateTime
 import it.pps.ddos.device.sensor.BasicSensor
-import it.pps.ddos.utils.GivenDataType.StringDataType
+import it.pps.ddos.utils.DataType
+import it.pps.ddos.utils.GivenDataType.given
+import it.sc.server.entities.RecordedData
+import reactivemongo.api.bson.BSONObjectID
 
 import scala.language.postfixOps
 
 class ClientActor:
-  var actualActorRef: ActorRef[DeviceMessage] = _
+  var actualEntry: RecordedData = RecordedData(BSONObjectID.generate().stringify, DateTime.now(), Map.empty[Int, Int])
 
   def behavior(): Behavior[DeviceMessage] =
     Behaviors.setup { context =>
       Behaviors.receiveMessage { msg => msg match
-        case Status(ref: ActorRef[DeviceMessage], value) if ref != actualActorRef =>
-          ref ! Subscribe(context.self)
-          actualActorRef = ref
+        case Status(ref: ActorRef[DeviceMessage], value: RecordedData) =>
+          if !value.equals(actualEntry) && value.idCamera != actualEntry.idCamera then
+            ref ! Subscribe(context.self)
+            actualEntry = value
           Behaviors.same
         case SubscribeAck(author) =>
           println("Subscribed to " + author)
@@ -26,4 +31,4 @@ class ClientActor:
     }
 
 object ClientActor:
-  def apply() = new ClientActor()
+  def apply(): ClientActor = new ClientActor()

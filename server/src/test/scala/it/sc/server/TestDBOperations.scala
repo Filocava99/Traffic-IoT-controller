@@ -5,7 +5,6 @@ import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.github.nscala_time.time.Imports.*
-import it.pps.ddos.DBWriter
 import it.pps.ddos.device.DeviceProtocol.*
 import it.pps.ddos.device.Public
 import it.pps.ddos.device.sensor.{BasicSensor, Sensor, SensorActor}
@@ -26,7 +25,7 @@ import it.sc.server.IdRequest
 import it.sc.server.ServerActor
 
 class TestDBOperations extends AnyFlatSpec:
-  "A DBWriter" should "work" in testDBWriter()
+  //"A DBWriter" should "work" in testDBWriter()
   "The management of a new camera id" should "be done properly" in testCameraInit()
   /*"A MongoDBFind" should "returns all the data in the database" in testMongoDBFindAll()
   "A MongoDBFind" should "returns only the data in the database that match the specified ID" in testMongoDBFindByID()*/
@@ -34,10 +33,10 @@ class TestDBOperations extends AnyFlatSpec:
   val testKit: ActorTestKit = ActorTestKit()
   private var testProbe = testKit.createTestProbe[DeviceMessage]()
 
-  def testDBWriter(): Unit =
-    val date = DateTime.now()
-    DBWriter(99, Map(date -> Set((0,0),(6,2),(3,2)), date + 3.seconds -> Set((0,322))))
-    while(true) {}
+//  def testDBWriter(): Unit =
+//    val date = DateTime.now()
+//    DBWriter(99, Map(date -> Set((0,0),(6,2),(3,2)), date + 3.seconds -> Set((0,322))))
+//    while(true) {}
 
  /* def testMongoDBFindAll(): Unit =
     MongoDBFind()
