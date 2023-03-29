@@ -11,25 +11,29 @@ import java.io.{BufferedReader, InputStreamReader}
 
 object Slave:
     def apply(ddosSensor: ActorRef[DeviceMessage], idCamera: String): Unit =
+        println("Starting YOLOV7 Object Tracking")
         val pb = new ProcessBuilder(
             "python",
             "-u",
-            "raspberry/src/main/resources/yolov7-object-tracking/detect_and_track.py",
-            "--weights", "raspberry/src/main/resources/yolov7-object-tracking/yolov7-tiny.pt",
+            "/home/filippo/yolov7-object-tracking/detect_and_track.py",
+            "--weights", "/home/filippo/yolov7-object-tracking/yolov7-tiny.pt",
             "--save-txt",
             "--save-bbox-dim",
-            "--source", "raspberry/src/main/resources/yolov7-object-tracking/video.mp4", //TODO change to 0 for webcam
+            "--source", "/home/filippo/yolov7-object-tracking/video.mp4", //TODO change to 0 for webcam
             "--classes", "0 1 2 3 5 7",
             //"--device", "0",
             "--name", "YOLOV7 Object Tracking"
         ).redirectOutput(ProcessBuilder.Redirect.PIPE)
         val process = pb.start()
+        println("Started YOLOV7 Object Tracking")
         val bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream))
         var lastMaxIds = Map[Int, Int]()
         var detectedObjects = Map[Int, Int](0 -> 0, 1 -> 0, 2 -> 0, 3 -> 0, 5 -> 0, 7 -> 0)
         var dt: DateTime = DateTime.now()
         while (process.isAlive)
             var line = bufferedReader.readLine()
+            println("line: ")
+            println(line)
             if (line != null)
                 if (line.startsWith("{"))
                     val root = line.as[Root]

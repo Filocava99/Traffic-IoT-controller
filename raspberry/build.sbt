@@ -9,7 +9,7 @@ lazy val raspbery = (project in file("."))
       name := "raspberry",
       assembly / mainClass := Some("it.unibo.smartcity.raspberry.Main"),
       assembly / assemblyJarName := "raspberry.jar",
-  ).dependsOn(ddos, server).aggregate(ddos, server)
+  ).dependsOn(ddos, server)//.aggregate(ddos, server)
 
 libraryDependencies ++= Seq(
     "org.virtuslab" % "scala-yaml_3" % "0.0.6",

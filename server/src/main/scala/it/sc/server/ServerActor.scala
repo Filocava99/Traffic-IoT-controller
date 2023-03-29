@@ -60,10 +60,11 @@ object ServerActor:
 
       def getCameraId(details: String): Future[BSONObjectID] =
         checkCameraId(details).flatMap(cameraList => Future {
+          println("Camera list: " + cameraList)
           cameraList.isEmpty match
             case true => //the camera is new to the system => create an id, a broadcaster and save the new anagraphics in the database
               val uuid = BSONObjectID.generate()
-
+              println("New camera detected: " + uuid.stringify)
               //istantiate the broadcaster that will forward camera status to clients
               Deployer.deploy(
                 new MapGroup[RecordedData, RecordedData]("broadcaster-" + uuid.stringify, Set.empty, List.empty, i => i)
@@ -76,7 +77,11 @@ object ServerActor:
               uuid
 
             case false =>
-              cameraList.head.id
+              val uuid = cameraList.head.id
+              Deployer.deploy(
+                new MapGroup[RecordedData, RecordedData]("broadcaster-" + uuid.stringify, Set.empty, List.empty, i => i)
+                  with Deployable[RecordedData, List[RecordedData]](TriggerMode.NONBLOCKING(true)))
+              uuid
         })
 
       Behaviors.receivePartial { (context, message) =>

@@ -31,14 +31,18 @@ object RaspberryActor:
               Behaviors.same
             case IdAnswer(id: String) =>
               timer.cancel("connectingStateTimer")
-              Thread.sleep(3000)
+              Thread.sleep(5000)
               println("IDANSWER RECEIVED: " + id)
+              Thread.sleep(5000)
               val broadcasterRef = Deployer.getActorRefViaReceptionist("broadcaster-" + id)
-              val storingRef = Deployer.getActorRefViaReceptionist("storing" + id)
+              Thread.sleep(5000)
+              val storingRef = Deployer.getActorRefViaReceptionist("storing")
+              Thread.sleep(5000)
               Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-" + id, List(broadcasterRef, storingRef), x => x))
-              Thread.sleep(3000)
+              Thread.sleep(5000)
               val sensorRef = Deployer.getActorRefViaReceptionist("raspberry-" + id)
               Slave(sensorRef, id)
+              println("Completed raspberry startup")
               Behaviors.same
         }
       }
