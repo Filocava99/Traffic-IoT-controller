@@ -10,7 +10,6 @@ import it.pps.ddos.device.Public
 import it.pps.ddos.device.sensor.{BasicSensor, Sensor, SensorActor}
 import it.pps.ddos.grouping.*
 import it.pps.ddos.utils.GivenDataType
-import org.joda.time.DateTime
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalactic.Prettifier.default
 import reactivemongo.api.bson.BSONObjectID

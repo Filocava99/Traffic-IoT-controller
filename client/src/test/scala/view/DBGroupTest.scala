@@ -11,7 +11,6 @@ import it.pps.ddos.device.sensor.{BasicSensor, Sensor, SensorActor}
 import it.pps.ddos.grouping.*
 import it.pps.ddos.utils.GivenDataType
 import util.{ MongoDBFindCameras, MongoDBFindStoricData }
-import org.joda.time.DateTime
 import org.scalactic.Prettifier.default
 import org.scalatest.flatspec.AnyFlatSpec
 import scalafx.scene.control.Button
