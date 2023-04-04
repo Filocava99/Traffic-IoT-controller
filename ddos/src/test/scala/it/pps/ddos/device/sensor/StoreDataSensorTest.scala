@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import it.pps.ddos.device.DeviceBehavior
 import it.pps.ddos.device.DeviceBehavior.Tick
-import it.pps.ddos.device.DeviceProtocol.{AckedStatus, DeviceMessage, Message, PropagateStatus, StatusAck, SensorMessage, Status, UpdateStatus}
+import it.pps.ddos.device.DeviceProtocol.{AckedStatus, DeviceMessage, Message, PropagateStatus, StatusAck, SensorMessage, UpdateStatus}
 import it.pps.ddos.device.{Device, DeviceProtocol, Public, Timer}
 import org.scalatest.flatspec.AnyFlatSpec
 import it.pps.ddos.utils.GivenDataType.given
@@ -53,7 +53,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
+      storeDataSensorActor ! UpdateStatus(DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       testProbe.expectMessageType[AckedStatus[DataCamera]]
@@ -80,7 +80,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
+      storeDataSensorActor ! UpdateStatus(DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       testProbe.expectMessageType[AckedStatus[DataCamera]]
@@ -107,7 +107,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
+      storeDataSensorActor ! UpdateStatus(DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       testProbe.expectMessageType[AckedStatus[DataCamera]]
@@ -145,7 +145,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
+      storeDataSensorActor ! UpdateStatus(DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       testProbe.expectMessageType[AckedStatus[DataCamera]]
@@ -174,7 +174,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
       listRandNumb = randNumb :: listRandNumb
 
       // update the sensor status and sending the new data to the database for storing
-      storeDataSensorActor ! Status(testProbe.ref, DataCamera(1, DateTime.now(), randNumb))
+      storeDataSensorActor ! UpdateStatus(DataCamera(1, DateTime.now(), randNumb))
       // storeDataSensor.update(storeDataSensorActor, randNumb) // other way to do the same thing
 
       testProbe.expectMessageType[AckedStatus[DataCamera]]

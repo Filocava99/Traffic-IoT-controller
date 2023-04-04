@@ -38,6 +38,7 @@ object RaspberryActor:
               Thread.sleep(5000)
               val storingRef = Deployer.getActorRefViaReceptionist("storing")
               Thread.sleep(5000)
+              println("Deploying StoreDataSensor")
               Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-" + id, List(broadcasterRef, storingRef), x => x))
               Thread.sleep(5000)
               val sensorRef = Deployer.getActorRefViaReceptionist("raspberry-" + id)
