@@ -41,7 +41,9 @@ object RaspberryActor:
               Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-" + id, List(broadcasterRef, storingRef), x => x))
               Thread.sleep(5000)
               val sensorRef = Deployer.getActorRefViaReceptionist("raspberry-" + id)
+              Thread.sleep(5000)
               Slave(sensorRef, id)
+              Thread.sleep(5000)
               println("Completed raspberry startup")
               Behaviors.same
         }
