@@ -8,14 +8,14 @@ import it.pps.ddos.device.sensor.StoreDataSensor
 import it.pps.ddos.utils.DataType
 import it.sc.server.{IdAnswer, IdRequest}
 import it.sc.server.entities.{Camera, RecordedData}
-import reactivemongo.api.bson.{BSONDateTime, BSONObjectID}
+import reactivemongo.api.bson.{BSONObjectID}
 import com.github.nscala_time.time.Imports.DateTime
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 given RecordedDataType: DataType[RecordedData] with
-  override def defaultValue: RecordedData = RecordedData(BSONObjectID.generate().stringify, BSONDateTime(DateTime.now().getMillis), Map.empty[Int, Int])
+  override def defaultValue: RecordedData = RecordedData(BSONObjectID.generate().stringify, DateTime.now().getMillis, Map.empty[Int, Int])
 
 object RaspberryActor:
   def apply(details: String): Behavior[DeviceMessage] =

@@ -3,7 +3,7 @@ package util
 import com.github.nscala_time.time.Imports.DateTime
 import it.sc.server.entities.RecordedData
 import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
-import reactivemongo.api.bson.{BSONDateTime, BSONDocumentReader, document}
+import reactivemongo.api.bson.{BSONDocumentReader, document}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -31,7 +31,7 @@ object MongoDBFindStoricData:
     BSONDocumentReader.from[RecordedData] { doc =>
       for {
         idCamera <- doc.getAsTry[String]("idCamera")
-        time <- doc.getAsTry[BSONDateTime]("timestamp")
+        time <- doc.getAsTry[Long]("timestamp")
         data <- doc.getAsTry[Set[(Int, Int)]]("data")
       } yield RecordedData(idCamera, time, data.toMap)
     }

@@ -1,15 +1,13 @@
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.{ActorRef, Behavior}
 import com.github.nscala_time.time.Imports.*
-import it.sc.server.entities.RecordedData
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Status, Subscribe, SubscribeAck, Unsubscribe, UnsubscribeAck}
+import it.pps.ddos.device.DeviceProtocol.*
 import it.pps.ddos.device.Timer
 import it.pps.ddos.device.sensor.BasicSensor
-import org.scalatest.flatspec.AnyFlatSpec
-import scalafx.scene.control.Button
+import it.sc.server.entities.RecordedData
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.*
-import reactivemongo.api.bson.BSONDateTime
+import scalafx.scene.control.Button
 
 class ClientActorTest extends AnyFlatSpec:
   val testKit: ActorTestKit = ActorTestKit()
@@ -29,20 +27,20 @@ class ClientActorTest extends AnyFlatSpec:
     val client = testKit.spawn(clientActor)
 
     // sending a specific DBEntry via the Status message
-    client ! Status(testProbe.ref, RecordedData("1", BSONDateTime(DateTime.now().getMillis), Map.empty[Int, Int]))
+    client ! Status(testProbe.ref, RecordedData("1", DateTime.now().getMillis, Map.empty[Int, Int]))
     Thread.sleep(1000)
     // expecting a response with the Subscribe message
     testProbe.expectMessageType[Subscribe[DeviceMessage]]
 
     // sending a DBEntry with the same ID of the first one via the Status message
     Thread.sleep(2000)
-    client ! Status(testProbe.ref, RecordedData("1", BSONDateTime(DateTime.now().getMillis), Map.empty[Int, Int]))
+    client ! Status(testProbe.ref, RecordedData("1", DateTime.now().getMillis, Map.empty[Int, Int]))
     // expecting no messages back because of the ID is the same
     testProbe.expectNoMessage()
 
     // sending a DBEntry with a different ID from the first one via the Status message
     Thread.sleep(2000)
-    client ! Status(testProbe.ref, RecordedData("2", BSONDateTime(DateTime.now().getMillis), Map.empty[Int, Int]))
+    client ! Status(testProbe.ref, RecordedData("2", DateTime.now().getMillis, Map.empty[Int, Int]))
     // expecting a response with the Subscribe message because of the ID is different
     testProbe.expectMessageType[Subscribe[DeviceMessage]]
 

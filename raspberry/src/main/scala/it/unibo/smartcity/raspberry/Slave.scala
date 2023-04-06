@@ -6,7 +6,7 @@ import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, UpdateStatus}
 import it.unibo.smartcity.raspberry.json.models.Root
 import org.virtuslab.yaml.StringOps
 import it.sc.server.entities.RecordedData
-import reactivemongo.api.bson.{BSONDateTime, BSONObjectID}
+import reactivemongo.api.bson.BSONObjectID
 
 import java.io.{BufferedReader, InputStreamReader}
 
@@ -43,7 +43,7 @@ object Slave:
                     root match
                         case Right(Root(frame, classes, detections)) =>
                             if (DateTime.now().getSecondOfMinute != dt.getSecondOfMinute)
-                                ddosSensor ! UpdateStatus(new RecordedData(idCamera, BSONDateTime(dt.getMillis), detectedObjects))
+                                ddosSensor ! UpdateStatus(new RecordedData(idCamera, dt.getMillis, detectedObjects))
                                 dt = DateTime.now()
                                 detectedObjects = Map[Int, Int](0 -> 0, 1 -> 0, 2 -> 0, 3 -> 0, 5 -> 0, 7 -> 0)
                             val maxIds: Map[Int, Int] = detections.groupBy(_.`class`).map((entry) => (entry._1, entry._2.map(_.id).max))

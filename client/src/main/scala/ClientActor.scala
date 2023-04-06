@@ -1,17 +1,17 @@
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Status, Subscribe, SubscribeAck, UnsubscribeAck}
-import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorRef, Behavior}
 import com.github.nscala_time.time.Imports.DateTime
+import it.pps.ddos.device.DeviceProtocol.*
 import it.pps.ddos.device.sensor.BasicSensor
 import it.pps.ddos.utils.DataType
 import it.pps.ddos.utils.GivenDataType.given
 import it.sc.server.entities.RecordedData
-import reactivemongo.api.bson.{BSONDateTime, BSONObjectID}
+import reactivemongo.api.bson.BSONObjectID
 
 import scala.language.postfixOps
 
 class ClientActor:
-  var actualEntry: RecordedData = RecordedData(BSONObjectID.generate().stringify, BSONDateTime(DateTime.now().getMillis), Map.empty[Int, Int])
+  var actualEntry: RecordedData = RecordedData(BSONObjectID.generate().stringify, DateTime.now().getMillis, Map.empty[Int, Int])
 
   def behavior(): Behavior[DeviceMessage] =
     Behaviors.setup { context =>

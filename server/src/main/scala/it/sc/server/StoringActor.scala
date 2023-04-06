@@ -11,8 +11,8 @@ import it.pps.ddos.grouping.*
 import it.pps.ddos.grouping.tagging.{Deployable, MapTag, TriggerMode}
 import it.sc.server.entities.RecordedData
 import it.sc.server.{IdAnswer, IdRequest}
-import reactivemongo.api.bson.collection.BSONCollection
 import reactivemongo.api.bson.*
+import reactivemongo.api.bson.collection.BSONCollection
 import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
 
 import scala.collection.immutable.List
@@ -30,7 +30,7 @@ object StoringActor:
   implicit val entryWriter: BSONDocumentWriter[RecordedData] =
     BSONDocumentWriter[RecordedData] { entry =>
       BSONDocument("idCamera" -> entry.idCamera,
-        "timestamp" -> BSONDateTime(DateTime.now().getMillis),
+        "timestamp" -> DateTime.now().getMillis,
         "data" -> entry.data.toSet)
     }
 
