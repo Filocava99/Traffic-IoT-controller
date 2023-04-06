@@ -30,7 +30,7 @@ object StoringActor:
   implicit val entryWriter: BSONDocumentWriter[RecordedData] =
     BSONDocumentWriter[RecordedData] { entry =>
       BSONDocument("idCamera" -> entry.idCamera,
-        "timestamp" -> BSONDateTime(entry.timeStamp.toDate.getTime),
+        "timestamp" -> BSONDateTime(DateTime.now().getMillis),
         "data" -> entry.data.toSet)
     }
 

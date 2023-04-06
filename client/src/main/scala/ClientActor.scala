@@ -6,12 +6,12 @@ import it.pps.ddos.device.sensor.BasicSensor
 import it.pps.ddos.utils.DataType
 import it.pps.ddos.utils.GivenDataType.given
 import it.sc.server.entities.RecordedData
-import reactivemongo.api.bson.BSONObjectID
+import reactivemongo.api.bson.{BSONDateTime, BSONObjectID}
 
 import scala.language.postfixOps
 
 class ClientActor:
-  var actualEntry: RecordedData = RecordedData(BSONObjectID.generate().stringify, DateTime.now(), Map.empty[Int, Int])
+  var actualEntry: RecordedData = RecordedData(BSONObjectID.generate().stringify, BSONDateTime(DateTime.now().getMillis), Map.empty[Int, Int])
 
   def behavior(): Behavior[DeviceMessage] =
     Behaviors.setup { context =>

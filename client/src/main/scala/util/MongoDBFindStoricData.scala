@@ -33,7 +33,7 @@ object MongoDBFindStoricData:
         idCamera <- doc.getAsTry[String]("idCamera")
         time <- doc.getAsTry[BSONDateTime]("timestamp")
         data <- doc.getAsTry[Set[(Int, Int)]]("data")
-      } yield RecordedData(idCamera, new DateTime(time.value), data.toMap)
+      } yield RecordedData(idCamera, time, data.toMap)
     }
 
   def storicData: List[RecordedData] = entries
