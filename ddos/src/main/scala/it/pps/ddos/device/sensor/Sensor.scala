@@ -81,7 +81,7 @@ class StoreDataSensor[O: DataType](id: String,
           actor <- destinations
           (k, v) <- dataStored
         } yield {
-          actor ! AckedStatus(selfId, k, v)
+          actor ! AckedStatus(selfId, k.getMillis, v)
         }
       case None =>
 

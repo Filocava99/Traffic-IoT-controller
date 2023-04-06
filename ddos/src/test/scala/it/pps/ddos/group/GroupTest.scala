@@ -152,7 +152,7 @@ class GroupTest extends AnyFlatSpec:
 
   private def testAckedStatus(): Unit =
     resetVariables()
-    val testAckKey = DateTime.now()
+    val testAckKey = DateTime.now().getMillis
     val toUppercaseActor = testKit.spawn(BlockingGroup(new ReduceGroup[String, String]("id", Set.empty, List.empty, _ + " | " + _, "")))
     Thread.sleep(3000)
     val dummySensor: Behavior[DeviceMessage] = Behaviors.receivePartial((context, message) =>

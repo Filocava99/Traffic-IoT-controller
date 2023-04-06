@@ -119,7 +119,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList.last)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! StatusAck(keyList.last)
+    storeDataSensorActor ! StatusAck(keyList.last.getMillis)
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)
@@ -157,7 +157,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList.last)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! StatusAck(keyList.last)
+    storeDataSensorActor ! StatusAck(keyList.last.getMillis)
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)
@@ -186,7 +186,7 @@ class StoreDataSensorTest extends AnyFlatSpec:
     println("Elements to remove: " + keyList.last)
 
     // send the ack message from the database including the data to remove
-    storeDataSensorActor ! StatusAck(keyList.last)
+    storeDataSensorActor ! StatusAck(keyList.last.getMillis)
     Thread.sleep(500)
 
     println("Stored values after the ack message: " + storeDataSensor.data)

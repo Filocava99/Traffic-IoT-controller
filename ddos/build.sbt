@@ -23,7 +23,6 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-cluster-typed" % AkkaVersion,
     "com.typesafe.akka" %% "akka-serialization-jackson" % AkkaVersion,
     "org.reactivemongo" %% "reactivemongo" % "1.1.0-RC7",
-    "com.fasterxml.jackson.datatype" % "jackson-datatype-joda" % "2.15.0-rc2"
 )
 
 libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "2.32.0"

@@ -3,7 +3,6 @@ package it.pps.ddos.device
 import akka.actor.typed.ActorRef
 
 import scala.collection.immutable.List
-import com.github.nscala_time.time.Imports._
 
 
 /**
@@ -22,9 +21,9 @@ object DeviceProtocol:
 
   case class Statuses[T](author: ActorRef[_ <: Message], value: List[T]) extends Output[List[T]](author, value)
 
-  case class AckedStatus[T](author: ActorRef[_ <: Message], key: DateTime, value: T) extends Output[T](author, value)
+  case class AckedStatus[T](author: ActorRef[_ <: Message], key: Long, value: T) extends Output[T](author, value)
 
-  case class StatusAck(key: DateTime) extends SensorMessage
+  case class StatusAck(key: Long) extends SensorMessage
 
   case class PropagateStatus[M <: Message](requester: ActorRef[M]) extends SensorMessage
 

@@ -19,7 +19,7 @@ class StoreDataSensorActor[O: DataType](val sensor: StoreDataSensor[O]):
       sensor.update(ctx.self, data)
       Behaviors.same
     case StatusAck(key) =>
-      sensor.updateStorage(key)
+      sensor.updateStorage(new DateTime(key))
       Behaviors.same
     case PropagateStatus[DeviceMessage](selfRef) =>
       sensor.propagate(selfRef, selfRef)
