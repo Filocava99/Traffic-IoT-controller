@@ -45,3 +45,4 @@ object NonBlockingGroup extends GroupActor:
       if(reset) g.reset()
       context.self ! PropagateStatus(context.self)
       Behaviors.same
+    case _ => println("AAAAAAAAA ")
