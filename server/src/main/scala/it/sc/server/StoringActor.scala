@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior, DispatcherSelector}
 import com.github.nscala_time.time.Imports.DateTime
 import com.typesafe.config.ConfigFactory
 import it.pps.ddos.deployment.Deployer
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Statuses}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Statuses, AckedStatus}
 import it.pps.ddos.device.sensor.StoreDataSensor
 import it.pps.ddos.grouping.*
 import it.pps.ddos.grouping.tagging.{Deployable, MapTag, TriggerMode}
@@ -60,6 +60,7 @@ object StoringActor:
                 .map(_ => {}))
             )
             Behaviors.same
+          case AckedStatus[RecordedData](author, key, value) => context.self ! Statuses(author, List(value)); Behaviors.same
           case _ => println("Unknown message"); Behaviors.same
       }
     }
