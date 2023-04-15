@@ -3,7 +3,7 @@ package it.unibo.smartcity.raspberry
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import it.pps.ddos.deployment.Deployer
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Timeout}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Timeout, AddSource}
 import it.pps.ddos.device.sensor.StoreDataSensor
 import it.pps.ddos.utils.DataType
 import it.sc.server.{IdAnswer, IdRequest}
@@ -42,6 +42,8 @@ object RaspberryActor:
               Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-" + id, List(broadcasterRef, storingRef), x => x))
               Thread.sleep(5000)
               val sensorRef = Deployer.getActorRefViaReceptionist("raspberry-" + id)
+              Thread.sleep(5000)
+              broadcasterRef ! AddSource(sensorRef)
               Thread.sleep(5000)
               Slave(sensorRef, id)
               Thread.sleep(5000)
