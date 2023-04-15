@@ -25,13 +25,22 @@ object StoringActor:
   // My settings (see available connection options)
   val mongoUri = "mongodb://localhost:27017"
 
-
   // Implicit document writer (scala DBEntry => mongoDB document)
-  implicit val entryWriter: BSONDocumentWriter[RecordedData] =
-    BSONDocumentWriter[RecordedData] { entry =>
-      BSONDocument("idCamera" -> entry.idCamera,
+  implicit val entryWriter2: BSONDocumentWriter[RecordedData] =
+    BSONDocumentWriter[RecordedData] { entry  =>
+      println("Writing data to DB")
+      println("data" -> entry.data.map(x => x._1.toString -> x._2))
+      println("idCamera" -> entry.idCamera)
+      println("timestamp" -> DateTime.now().getMillis)
+      println(BSONDocument(
+        "idCamera" -> entry.idCamera,
         "timestamp" -> DateTime.now().getMillis,
-        "data" -> entry.data.toSet)
+        "data" -> entry.data.map(x => x._1.toString -> x._2)))
+      BSONDocument(
+        "idCamera" -> entry.idCamera,
+        "timestamp" -> DateTime.now().getMillis
+        //"data" -> entry.data.map(x => BSONDocument(x._1.toString -> x._2))
+      )
     }
 
   def apply(): Behavior[DeviceMessage] =
@@ -52,15 +61,16 @@ object StoringActor:
 
       Behaviors.receivePartial { (context, message) =>
         message match
-          case Statuses[RecordedData](author, values: List[RecordedData]) =>
-            values.map(entry =>
+          case Statuses(author, values: List[Map[String, Object]]) =>
+            values.foreach(entry =>
+              println("Received data from: " + author)
+              println(entry)
               //save in the DB the new recorded data
-              entryCollection.flatMap(_.insert
-                .one(RecordedData(entry.idCamera, entry.timeStamp, entry.data))
-                .map(_ => {}))
+              entryCollection.flatMap(_.insert.one(RecordedData(entry("idCamera").asInstanceOf[String], entry("timeStamp").asInstanceOf[Long], entry("data").asInstanceOf[Map[Int, Int]]))
+                .map(_ => {})) //await
             )
             Behaviors.same
-          case AckedStatus[RecordedData](author, key, value) => context.self ! Statuses(author, List(value)); Behaviors.same
+          case AckedStatus(author, key, value) => context.self ! Statuses(author, List(value)); Behaviors.same
           case _ => println("Unknown message"); Behaviors.same
       }
     }
