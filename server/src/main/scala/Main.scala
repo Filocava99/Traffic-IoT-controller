@@ -9,6 +9,7 @@ import it.sc.server.{IdRequest, ServerActor, StoringActor}
 import reactivemongo.api.bson.BSONObjectID
 import it.sc.server.entities.RecordedData
 import com.github.nscala_time.time.Imports.DateTime
+
 import java.net.InetAddress
 
 object Main{
@@ -20,11 +21,12 @@ object Main{
     as ! InternSpawn("server", ServerActor())
     Thread.sleep(3000)
     val ref = Deployer.getActorRefViaReceptionist("server")
-    //ref ! IdRequest("via manzoni 10", ref)
+    ref ! IdRequest("via manzoni 999", ref)
     as ! InternSpawn("storing", StoringActor())
     Thread.sleep(3000)
-    /*val storingRef = Deployer.getActorRefViaReceptionist("storingActor")
+    val storingRef = Deployer.getActorRefViaReceptionist("storing")
     val fakeCameraId = BSONObjectID.generate()
-    storingRef ! Statuses[RecordedData](ref, List(RecordedData(fakeCameraId, DateTime.now(), Map(1->2, 0->99))))*/
+
+    storingRef ! Statuses[RecordedData](ref, List(RecordedData(fakeCameraId.stringify, 1000, Map(1->2, 0->99))))
 
 }

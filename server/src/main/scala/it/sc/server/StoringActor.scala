@@ -28,19 +28,10 @@ object StoringActor:
   // Implicit document writer (scala DBEntry => mongoDB document)
   implicit val entryWriter2: BSONDocumentWriter[RecordedData] =
     BSONDocumentWriter[RecordedData] { entry  =>
-      println("Writing data to DB")
-      println("data" -> entry.data.map(x => x._1.toString -> x._2))
-      println("idCamera" -> entry.idCamera)
-      println("timestamp" -> DateTime.now().getMillis)
-      println(BSONDocument(
-        "idCamera" -> entry.idCamera,
-        "timestamp" -> DateTime.now().getMillis,
-        "data" -> entry.data.map(x => x._1.toString -> x._2)))
       BSONDocument(
         "idCamera" -> entry.idCamera,
-        "timestamp" -> DateTime.now().getMillis
-        //"data" -> entry.data.map(x => BSONDocument(x._1.toString -> x._2))
-      )
+        "timestamp" -> DateTime.now().getMillis,
+        "data" -> entry.data.toSet)
     }
 
   def apply(): Behavior[DeviceMessage] =
@@ -61,13 +52,14 @@ object StoringActor:
 
       Behaviors.receivePartial { (context, message) =>
         message match
-          case Statuses(author, values: List[Map[String, Object]]) =>
+          case Statuses(author, values: List[RecordedData]) =>
             values.foreach(entry =>
               println("Received data from: " + author)
               println(entry)
               //save in the DB the new recorded data
-              entryCollection.flatMap(_.insert.one(RecordedData(entry("idCamera").asInstanceOf[String], entry("timeStamp").asInstanceOf[Long], entry("data").asInstanceOf[Map[Int, Int]]))
-                .map(_ => {})) //await
+              entryCollection.flatMap(_.insert.one(
+              //RecordedData(entry("idCamera").asInstanceOf[String], entry("timeStamp").asInstanceOf[Long], entry("data").asInstanceOf[Map[Int, Int]]))
+              RecordedData(entry.idCamera, entry.timeStamp, entry.data)).map(_ => {})) //await
             )
             Behaviors.same
           case AckedStatus(author, key, value) => context.self ! Statuses(author, List(value)); Behaviors.same
