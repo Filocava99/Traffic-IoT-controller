@@ -5,34 +5,26 @@ import akka.actor.typed.{ActorRef, Behavior, DispatcherSelector}
 import com.github.nscala_time.time.Imports.DateTime
 import com.typesafe.config.ConfigFactory
 import it.pps.ddos.deployment.Deployer
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message, Statuses, AckedStatus}
+import it.pps.ddos.device.DeviceProtocol.{AckedStatus, DeviceMessage, Message, Statuses}
 import it.pps.ddos.device.sensor.StoreDataSensor
 import it.pps.ddos.grouping.*
 import it.pps.ddos.grouping.tagging.{Deployable, MapTag, TriggerMode}
 import it.sc.server.entities.RecordedData
+import it.sc.server.mongodb.MongoDBClient
 import it.sc.server.{IdAnswer, IdRequest}
+import org.bson.Document
+import org.bson.types.ObjectId
 import reactivemongo.api.bson.*
 import reactivemongo.api.bson.collection.BSONCollection
 import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
 
-import scala.collection.immutable.List
-import scala.concurrent.duration.DurationInt
+import scala.collection.immutable.{HashMap, List}
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.language.postfixOps
 import scala.util.{Failure, Success}
 
 object StoringActor:
-
-  // My settings (see available connection options)
-  val mongoUri = "mongodb://localhost:27017"
-
-  // Implicit document writer (scala DBEntry => mongoDB document)
-  implicit val entryWriter2: BSONDocumentWriter[RecordedData] =
-    BSONDocumentWriter[RecordedData] { entry  =>
-      BSONDocument(
-        "idCamera" -> entry.idCamera,
-        "timestamp" -> DateTime.now().getMillis,
-        "data" -> entry.data.toSet)
-    }
 
   def apply(): Behavior[DeviceMessage] =
     Behaviors.setup[DeviceMessage] { context =>
@@ -41,28 +33,37 @@ object StoringActor:
       implicit val executionContext: ExecutionContext =
         context.system.dispatchers.lookup(DispatcherSelector.fromConfig("akka.blocking-dispatcher"))
 
-      // Connect to the database: Must be done only once per application
-      val driver = AsyncDriver()
-      val parsedUri = MongoConnection.fromString(mongoUri)
-
-      // Database and collections: Get references
-      val futureConnection = parsedUri.flatMap(driver.connect(_))
-      def db1: Future[DB] = futureConnection.flatMap(_.database("TrafficFlow"))
-      def entryCollection = db1.map(_.collection("storicCount"))
-
       Behaviors.receivePartial { (context, message) =>
         message match
-          case Statuses(author, values: List[RecordedData]) =>
+//          case Statuses(author, values: List[RecordedData]) =>
+//            val entryCollection = MongoDBClient.getDB.get.getCollection("storicCount")
+//            values.foreach(entry =>
+//              println("Received data from: " + author)
+//              println(entry)
+//              println("Inserting data in the DB")
+//              val result = entryCollection.insertOne(new Document()
+//                .append("_id", new ObjectId())
+//                .append("idCamera", entry.idCamera)
+//                .append("timeStamp", entry.timeStamp)
+//                .append("data", entry.data.asInstanceOf[Map.Map2[Int, Int]]))
+//              println("Data inserted: " + result.getInsertedId)
+//            )
+//            Behaviors.same
+          case Statuses(author, values: List[Map[String, Object]]) =>
+            val entryCollection = MongoDBClient.getDB.get.getCollection("storicCount")
             values.foreach(entry =>
               println("Received data from: " + author)
               println(entry)
-              //save in the DB the new recorded data
-              entryCollection.flatMap(_.insert.one(
-              //RecordedData(entry("idCamera").asInstanceOf[String], entry("timeStamp").asInstanceOf[Long], entry("data").asInstanceOf[Map[Int, Int]]))
-              RecordedData(entry.idCamera, entry.timeStamp, entry.data)).map(_ => {})) //await
-            )
+              println("Inserting data in the DB")
+              val result = entryCollection.insertOne(new Document()
+                .append("_id", new ObjectId())
+                .append("idCamera", entry("idCamera").asInstanceOf[String])
+                .append("timeStamp", entry("timeStamp").asInstanceOf[Long])
+                .append("data", entry("data").asInstanceOf[HashMap[Int, Int]]))
+              println("Data inserted: " + result.getInsertedId)
+              )
             Behaviors.same
           case AckedStatus(author, key, value) => context.self ! Statuses(author, List(value)); Behaviors.same
-          case _ => println("Unknown message"); Behaviors.same
+          case _ => println(s"[Storing Actor] Unknown message - ${message}"); Behaviors.same
       }
     }

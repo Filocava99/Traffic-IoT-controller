@@ -3,6 +3,8 @@ package it.sc.server
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior, DispatcherSelector}
 import com.github.nscala_time.time.Imports.DateTime
+import com.mongodb.client.MongoCollection
+import com.mongodb.client.model.Filters
 import com.typesafe.config.ConfigFactory
 import it.pps.ddos.deployment.Deployer
 import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Message}
@@ -10,7 +12,11 @@ import it.pps.ddos.device.sensor.StoreDataSensor
 import it.pps.ddos.grouping.*
 import it.pps.ddos.grouping.tagging.{Deployable, MapTag, TriggerMode}
 import it.sc.server.entities.{Camera, RecordedData}
+import it.sc.server.mongodb.MongoDBClient
 import it.sc.server.{IdAnswer, IdRequest}
+import org.bson.Document
+import org.bson.conversions.Bson
+import org.bson.types.ObjectId
 import reactivemongo.api.bson.*
 import reactivemongo.api.bson.collection.BSONCollection
 import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
@@ -21,77 +27,64 @@ import scala.util.{Failure, Success}
 
 object ServerActor:
 
-  // My settings (see available connection options)
-  val mongoUri = "mongodb://localhost:27017"
+    //implicit object cameraEntryReader extends BSONDocumentReader[Camera]:
+    //    def readDocument(doc: BSONDocument) = for {
+    //      id <- doc.getAsTry[BSONObjectID]("_id")
+    //      details <- doc.getAsTry[String]("details")
+    //    } yield Camera(id, details)
+    //
+    //  implicit val cameraEntryWriter: BSONDocumentWriter[Camera] =
+    //    BSONDocumentWriter[Camera] { entry =>
+    //      BSONDocument("_id" -> entry.id,
+    //        "details" -> entry.details)
+    //    }
 
-  implicit object cameraEntryReader extends BSONDocumentReader[Camera]:
-    def readDocument(doc: BSONDocument) = for {
-      id <- doc.getAsTry[BSONObjectID]("_id")
-      details <- doc.getAsTry[String]("details")
-    } yield Camera(id, details)
+    // My settings (see available connection options)
 
-  implicit val cameraEntryWriter: BSONDocumentWriter[Camera] =
-    BSONDocumentWriter[Camera] { entry =>
-      BSONDocument("_id" -> entry.id,
-        "details" -> entry.details)
-    }
+    def apply(): Behavior[DeviceMessage] =
+        Behaviors.setup[DeviceMessage] { context =>
+            val collection: MongoCollection[Document] = MongoDBClient.getDB.get.getCollection("cameras")
 
-  def apply(): Behavior[DeviceMessage] =
-    Behaviors.setup[DeviceMessage] { context =>
+            def checkCameraId(details: String): List[Camera] =
+                val cursor = collection.find(Filters.eq("details", details)).iterator();
+                var list: List[Camera] = List.empty
+                while (cursor.hasNext) do
+                    val document = cursor.next()
+                    list = Camera(document.getObjectId("_id"), document.getString("details")) :: list
+                list
 
-      //Setup actor dispatcher for Future resolution
-      implicit val executionContext: ExecutionContext =
-        context.system.dispatchers.lookup(DispatcherSelector.fromConfig("akka.sequential-dispatcher"))
+            def getCameraId(details: String): ObjectId =
+                val cameraList = checkCameraId(details)
+                println("Camera list: " + cameraList)
+                if cameraList.isEmpty then
+                    val uuid = new ObjectId()
+                    println("New camera detected: " + uuid.toHexString)
+                    //istantiate the broadcaster that will forward camera status to clients
+                    Deployer.deploy(
+                        new MapGroup[RecordedData, RecordedData]("broadcaster-" + uuid.toHexString, Set.empty, List.empty, i => i)
+                          with Deployable[RecordedData, List[RecordedData]](TriggerMode.NONBLOCKING(true)))
 
-      // Connect to the database: Must be done only once per application
-      val driver = AsyncDriver()
-      val parsedUri = MongoConnection.fromString(mongoUri)
+                    //save in the DB the new camera
+                    val result = collection.insertOne(new Document()
+                      .append("_id", uuid)
+                      .append("details", details))
+                    println("Success! Inserted document id: " + result.getInsertedId)
+                    uuid
+                else
+                    val uuid = cameraList.head.id
+                    Deployer.deploy(
+                        new MapGroup[RecordedData, RecordedData]("broadcaster-" + uuid.toHexString, Set.empty, List.empty, i => i)
+                          with Deployable[RecordedData, List[RecordedData]](TriggerMode.NONBLOCKING(true)))
+                    uuid
 
-      // Database and collections: Get references
-      val futureConnection = parsedUri.flatMap(driver.connect(_))
-      def db1: Future[DB] = futureConnection.flatMap(_.database("TrafficFlow"))
-      def entryCollection = db1.map(_.collection("cameras"))
-
-      def checkCameraId(details: String): Future[List[Camera]] =
-        val query = BSONDocument("details" -> BSONDocument(f"$$eq" -> details))
-        entryCollection.flatMap(_.find(query).
-          cursor[Camera](). // ... collect in a `List`
-          collect[List](-1, Cursor.FailOnError[List[Camera]]()))
-
-      def getCameraId(details: String): Future[BSONObjectID] =
-        checkCameraId(details).flatMap(cameraList => Future {
-          println("Camera list: " + cameraList)
-          cameraList.isEmpty match
-            case true => //the camera is new to the system => create an id, a broadcaster and save the new anagraphics in the database
-              val uuid = BSONObjectID.generate()
-              println("New camera detected: " + uuid.stringify)
-              //istantiate the broadcaster that will forward camera status to clients
-              Deployer.deploy(
-                new MapGroup[RecordedData, RecordedData]("broadcaster-" + uuid.stringify, Set.empty, List.empty, i => i)
-                  with Deployable[RecordedData, List[RecordedData]](TriggerMode.NONBLOCKING(true)))
-
-              //save in the DB the new camera
-              entryCollection.flatMap(_.insert
-                .one(Camera(uuid, details))
-                .map(_ => {}))
-              uuid
-
-            case false =>
-              val uuid = cameraList.head.id
-              Deployer.deploy(
-                new MapGroup[RecordedData, RecordedData]("broadcaster-" + uuid.stringify, Set.empty, List.empty, i => i)
-                  with Deployable[RecordedData, List[RecordedData]](TriggerMode.NONBLOCKING(true)))
-              uuid
-        })
-
-      Behaviors.receivePartial { (context, message) =>
-        message match
-          case IdRequest(details: String, replyTo: ActorRef[DeviceMessage]) =>
-            val id = Await.result(getCameraId(details), 2.seconds)
-            replyTo ! IdAnswer(id.stringify)
-            Behaviors.same
-          case _ => println("Unknown message"); Behaviors.same
-      }
-    }
+            Behaviors.receivePartial { (context, message) =>
+                message match
+                    case IdRequest(details: String, replyTo: ActorRef[DeviceMessage]) =>
+                        val id = getCameraId(details)
+                        replyTo ! IdAnswer(id.toString)
+                        Behaviors.same
+                    case _ => println(s"[Server Actor] Unknown message - ${message}"); Behaviors.same
+            }
+        }
 
 

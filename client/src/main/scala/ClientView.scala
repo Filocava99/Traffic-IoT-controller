@@ -51,7 +51,7 @@ class ClientView extends JFXApp3:
 
   private def initVideocamera(node: VBox) =
     for v <- MongoDBFindCameras.cameras yield {
-      val button = new Button(v.id.stringify)
+      val button = new Button(v.id.toHexString)
       button.setText(v.details)
       button.prefWidth = 222
       button.prefHeight = 26

@@ -1,5 +1,5 @@
 package it.sc.server.entities
 
-import reactivemongo.api.bson.BSONObjectID
+import org.bson.types.ObjectId
 
-case class Camera(id: BSONObjectID, details: String)
+case class Camera(id: ObjectId, details: String)

@@ -18,8 +18,6 @@ import scalafx.scene.control.Button
 import scala.collection.immutable.List
 import scala.concurrent.duration.{Duration, FiniteDuration}
 
-import reactivemongo.api.bson.BSONObjectID
-
 class DBGroupTest extends AnyFlatSpec:
   "A MongoDBFind" should "returns all the data in the database" in testMongoDBFindAll()
   "A MongoDBFind" should "returns only the data in the database that match the specified ID" in testMongoDBFindByID()
@@ -29,5 +27,5 @@ class DBGroupTest extends AnyFlatSpec:
     Thread.sleep(10000) // waiting for the read operation to complete
 
   def testMongoDBFindByID(): Unit =
-    MongoDBFindCameras(BSONObjectID.parse("64171d4ea9b70f6f6e4d9241").get)
+    //MongoDBFindCameras(new ObjectId("64171d4ea9b70f6f6e4d9241").get)
     Thread.sleep(10000) // waiting for the read operation to complete

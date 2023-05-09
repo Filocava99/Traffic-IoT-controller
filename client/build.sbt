@@ -16,3 +16,4 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.15" % Test
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % AkkaVersion % Test,
 )
+libraryDependencies += "org.mongodb" % "mongodb-driver-sync" % "4.9.1"

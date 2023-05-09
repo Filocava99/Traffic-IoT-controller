@@ -1,8 +1,12 @@
 package util
 
+import com.mongodb.ConnectionString
+import com.mongodb.client.model.Filters
+import com.mongodb.client.{MongoClient, MongoClients, MongoCollection, MongoDatabase}
 import it.sc.server.entities.Camera
-import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
-import reactivemongo.api.bson.{BSONDocumentReader, BSONObjectID, document}
+import it.sc.server.mongodb.MongoDBClient
+import org.bson.Document
+import org.bson.types.ObjectId
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -10,29 +14,8 @@ import scala.util.{Failure, Success}
 object MongoDBFindCameras:
   private var entries: List[Camera] = List.empty
 
-  // My settings (see available connection options)
-  val mongoUri = "mongodb://localhost:27017"
 
-  import ExecutionContext.Implicits.global // use any appropriate context
-
-  // Connect to the database: Must be done only once per application
-  val driver = AsyncDriver()
-  val parsedUri = MongoConnection.fromString(mongoUri)
-
-  // Database and collections: Get references
-  val futureConnection = parsedUri.flatMap(driver.connect(_))
-
-  def db1: Future[DB] = futureConnection.flatMap(_.database("TrafficFlow"))
-
-  def entryCollection = db1.map(_.collection("cameras"))
-
-  implicit val entryReader: BSONDocumentReader[Camera] =
-    BSONDocumentReader.from[Camera] { doc =>
-      for {
-        idCamera <- doc.getAsTry[BSONObjectID]("_id")
-        data <- doc.getAsTry[String]("details")
-      } yield Camera(idCamera, data)
-    }
+  val collection: MongoCollection[Document] = MongoDBClient.getDB.get.getCollection("cameras")
 
   def cameras: List[Camera] = entries
 
@@ -40,31 +23,24 @@ object MongoDBFindCameras:
    * Returns all the data in the database
    */
   def apply(): Unit =
-    val readRes = entryCollection.flatMap(_.find(document())
-      .cursor[Camera]() // using the result cursor
-      .collect[List](-1, Cursor.FailOnError[List[Camera]]()))
-
-    readRes.onComplete { // Dummy callbacks
-      case Failure(e) => e.printStackTrace()
-      case Success(readResult) =>
-        entries = readResult
-        println(s"successfully read with result: $readResult")
-    }
+    val cursor = collection.find().iterator();
+    var list: List[Camera] = List.empty
+    while (cursor.hasNext) do
+      val document = cursor.next()
+      list = Camera(document.getObjectId("_id"), document.getString("details")) :: list
+    entries = list
+    println(s"successfully read with result: $entries")
 
   /**
    * Returns only the data in the database that match the specified idCamera
    *
    * @param idCamera
    */
-  def apply(idCamera: BSONObjectID): Unit =
-    val readRes = entryCollection.flatMap(_.find(document("_id" -> idCamera))
-      .cursor[Camera]() // using the result cursor
-      .collect[List](-1, Cursor.FailOnError[List[Camera]]()))
-
-    readRes.onComplete { // Dummy callbacks
-      case Failure(e) => e.printStackTrace()
-      case Success(readResult) =>
-        entries = readResult
-        println(s"successfully read with result: $readResult")
-    }
-
+  def apply(idCamera: String): Unit =
+    val cursor = collection.find(Filters.eq("_id", new ObjectId(idCamera))).iterator();
+    var list: List[Camera] = List.empty
+    while (cursor.hasNext) do
+      val document = cursor.next()
+      list = Camera(document.getObjectId("_id"), document.getString("details")) :: list
+    entries = list
+    println(s"successfully read with result: $entries")
