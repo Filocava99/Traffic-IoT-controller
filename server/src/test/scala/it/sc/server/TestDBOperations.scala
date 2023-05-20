@@ -12,8 +12,6 @@ import it.pps.ddos.grouping.*
 import it.pps.ddos.utils.GivenDataType
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalactic.Prettifier.default
-import reactivemongo.api.bson.BSONObjectID
-
 import scalafx.scene.control.Button
 
 import java.util.UUID
@@ -22,6 +20,7 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 import it.sc.server.IdAnswer
 import it.sc.server.IdRequest
 import it.sc.server.ServerActor
+import org.bson.types.ObjectId
 
 class TestDBOperations extends AnyFlatSpec:
   //"A DBWriter" should "work" in testDBWriter()
@@ -49,5 +48,5 @@ class TestDBOperations extends AnyFlatSpec:
     val serverRef = testKit.spawn(ServerActor())
     serverRef ! IdRequest("test", testProbe.ref)
     Thread.sleep(500)
-    testProbe.expectMessage(IdAnswer(BSONObjectID.generate().stringify))
+    testProbe.expectMessage(IdAnswer(new ObjectId().toHexString))
 

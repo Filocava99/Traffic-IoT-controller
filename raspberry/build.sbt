@@ -16,6 +16,8 @@ libraryDependencies ++= Seq(
     "com.github.nscala-time" %% "nscala-time" % "2.32.0"
 )
 
+libraryDependencies += "org.mongodb" % "mongodb-driver-sync" % "4.9.1"
+
 ThisBuild / assemblyMergeStrategy := {
     case x if Assembly.isConfigFile(x) =>
         MergeStrategy.concat

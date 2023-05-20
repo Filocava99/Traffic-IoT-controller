@@ -3,10 +3,9 @@ package it.unibo.smartcity.raspberry
 import akka.actor.typed.ActorRef
 import com.github.nscala_time.time.Imports.DateTime
 import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, UpdateStatus}
+import it.sc.server.entities.RecordedData
 import it.unibo.smartcity.raspberry.json.models.Root
 import org.virtuslab.yaml.StringOps
-import it.sc.server.entities.RecordedData
-import reactivemongo.api.bson.BSONObjectID
 
 import java.io.{BufferedReader, InputStreamReader}
 

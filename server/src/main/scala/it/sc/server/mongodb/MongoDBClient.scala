@@ -6,8 +6,6 @@ import com.mongodb.client.{MongoClient, MongoClients, MongoDatabase}
 import com.mongodb.connection.ClusterSettings
 import it.sc.server.entities.{Camera, RecordedData}
 import org.bson.codecs.configuration.CodecRegistries
-import reactivemongo.api.{AsyncDriver, DB, MongoConnection}
-import reactivemongo.api.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONObjectID}
 
 import scala.concurrent.{ExecutionContext, Future}
 
