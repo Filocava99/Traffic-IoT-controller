@@ -19,4 +19,3 @@ object MainDemo extends App:
   as ! InternSpawn("Camera2", sensorB.behavior())
   as ! InternSpawn("Camera3", sensorC.behavior())
   ClientView()
-
