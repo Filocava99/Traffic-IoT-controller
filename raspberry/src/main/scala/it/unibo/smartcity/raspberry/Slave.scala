@@ -15,11 +15,11 @@ object Slave:
         val pb = new ProcessBuilder(
             "python",
             //            "-u",
-            "/home/filippo/Scrivania/Traffic-IoT-controller/raspberry/src/main/resources/yolov7-object-tracking/detect_and_track.py",
-            "--weights", "/home/filippo/Scrivania/Traffic-IoT-controller/raspberry/src/main/resources/yolov7-object-tracking/yolov7-tiny.pt",
+            "/home/filippo/Traffic-IoT-controller/raspberry/src/main/resources/yolov7-object-tracking/detect_and_track.py",
+            "--weights", "/home/filippo/Traffic-IoT-controller/raspberry/src/main/resources/yolov7-object-tracking/yolov7-tiny.pt",
             "--save-txt",
             "--save-bbox-dim",
-            "--source", "/home/filippo/Scrivania/Traffic-IoT-controller/raspberry/src/main/resources/yolov7-object-tracking/video.mp4", //TODO change to 0 for webcam
+            "--source", "/home/filippo/Traffic-IoT-controller/raspberry/src/main/resources/yolov7-object-tracking/video.mp4", //TODO change to 0 for webcam
             //"--classes", "\"0 1 2 3 5 7\"",
             "--classes", "0",
             //"--device", "0",

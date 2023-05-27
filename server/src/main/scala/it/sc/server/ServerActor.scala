@@ -17,9 +17,6 @@ import it.sc.server.{IdAnswer, IdRequest}
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.bson.types.ObjectId
-import reactivemongo.api.bson.*
-import reactivemongo.api.bson.collection.BSONCollection
-import reactivemongo.api.{AsyncDriver, Cursor, DB, MongoConnection}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
