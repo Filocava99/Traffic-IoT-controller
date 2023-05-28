@@ -65,7 +65,8 @@ class ClientView extends JFXApp3:
       ref ! Unsubscribe(Deployer.getActorRefViaReceptionist(actualID))
       actualID = id
 
-  private def mediaAndDataHandler(id: String, ref: ActorRef[DeviceMessage]) =
+  private def mediaAndDataHandler(details: String, ref: ActorRef[DeviceMessage]) =
+    val id = Deployer.getActorRefViaReceptionist(details).path.name
     checkID(id, ref)
     val media = stage.scene.get().lookup("#mediaView").asInstanceOf[MediaView]
     // TODO: add camera transmission
