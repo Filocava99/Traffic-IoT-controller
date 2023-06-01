@@ -18,7 +18,6 @@ class ClientActor:
       Behaviors.receiveMessage { msg => msg match
         case Status(ref: ActorRef[DeviceMessage], value: RecordedData) =>
           if !value.equals(actualEntry) && value.idCamera != actualEntry.idCamera then
-            ref ! Subscribe(context.self)
             actualEntry = value
           Behaviors.same
         case SubscribeAck(author) =>

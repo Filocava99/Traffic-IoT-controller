@@ -3,13 +3,13 @@ import com.github.nscala_time.time.Imports.Duration
 import it.pps.ddos.deployment.Deployer
 import it.pps.ddos.deployment.graph.Graph
 import it.pps.ddos.device.Device
-import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Unsubscribe}
+import it.pps.ddos.device.DeviceProtocol.{DeviceMessage, Subscribe, Unsubscribe}
 import it.pps.ddos.device.sensor.BasicSensor
 import it.pps.ddos.grouping.MapGroup
 import it.sc.server.entities.RecordedData
 import it.pps.ddos.deployment.Deployer.InternSpawn
 import it.pps.ddos.utils.GivenDataType.DoubleDataType
-import util.{ MongoDBFindCameras, MongoDBFindStoricData }
+import util.{MongoDBFindCameras, MongoDBFindStoricData}
 import javafx.animation.KeyValue
 import scalafx.Includes.*
 import scalafx.application.JFXApp3
@@ -55,7 +55,7 @@ class ClientView extends JFXApp3:
       button.setText(v.details)
       button.prefWidth = 222
       button.prefHeight = 26
-      button.onMouseClicked = () => mediaAndDataHandler(v.details, Deployer.getActorRefViaReceptionist(v.details))
+      button.onMouseClicked = () => mediaAndDataHandler(v.id.toHexString, Deployer.getActorRefViaReceptionist("broadcaster-" + v.id.toHexString))
       node.getChildren.add(button)
     }
 
@@ -64,9 +64,9 @@ class ClientView extends JFXApp3:
     else if actualID != id then
       ref ! Unsubscribe(Deployer.getActorRefViaReceptionist(actualID))
       actualID = id
+      ref ! Subscribe(Deployer.getActorRefViaReceptionist(actualID))
 
-  private def mediaAndDataHandler(details: String, ref: ActorRef[DeviceMessage]) =
-    val id = Deployer.getActorRefViaReceptionist(details).path.name
+  private def mediaAndDataHandler(id: String, ref: ActorRef[DeviceMessage]) =
     checkID(id, ref)
     val media = stage.scene.get().lookup("#mediaView").asInstanceOf[MediaView]
     // TODO: add camera transmission
