@@ -40,7 +40,7 @@ def get_frame():
 def video_feed():
 	# return the response generated along with the specific media
 	# type (mime type)
-	return Response("<html><body><img src='frame.jpg'></body></html>")
+	return Response("<html><body><img src='static/frame.jpg'></body></html>")
 
 
 #............................... Bounding Boxes Drawing ............................
@@ -271,9 +271,11 @@ def detect(save_img=False):
             #print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS', flush=True)
 
             (flag, outputFrame) = cv2.imencode(".jpg", im0)
-            if os.path.exists("frame.jpg"):
-                os.remove("frame.jpg")
-            cv2.imwrite("frame.jpg", im0)
+            if (!os.path.exists("static/")):
+                os.mkdir("static/")
+            if os.path.exists("static/frame.jpg"):
+                os.remove("static/frame.jpg")
+            cv2.imwrite("static/frame.jpg", im0)
             global encodedFrame
             encodedFrame = b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(outputFrame) + b'\r\n'
 
