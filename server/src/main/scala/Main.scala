@@ -21,13 +21,5 @@ object Main{
     val as = Deployer.createActorSystem(serverAddress)
     as ! InternSpawn("server", ServerActor())
     Thread.sleep(3000)
-//    val ref = Deployer.getActorRefViaReceptionist("server")
-//    ref ! IdRequest("via manzoni 999", ref)
     as ! InternSpawn("storing", StoringActor())
-    Thread.sleep(3000)
-    val storingRef = Deployer.getActorRefViaReceptionist("storing")
-    val fakeCameraId = new ObjectId()
-
-//    storingRef ! Statuses[RecordedData](ref, List(RecordedData(fakeCameraId.stringify, 1000, Map(1->2, 0->102))))
-
 }

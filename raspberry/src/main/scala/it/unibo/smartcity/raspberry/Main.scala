@@ -26,6 +26,5 @@ object Main{
         println("Raspberry address: " + raspberryAddress)
         val as = Deployer.createActorSystem(raspberryAddress)
         Thread.sleep(3000)
-        //as ! InternSpawn("r1", RaspberryActor(args(0)))
-        as ! InternSpawn("r1", RaspberryActor("viadiroma"))
+        as ! InternSpawn("r1", RaspberryActor(args(0)))
 }

@@ -6,7 +6,9 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.{MongoClient, MongoClients, MongoCollection, MongoDatabase}
 import it.sc.server.entities.RecordedData
 import it.sc.server.mongodb.MongoDBClient
-import org.bson.Document
+import org.bson.codecs.{Codec, DecoderContext}
+import org.bson.json.JsonReader
+import org.bson.{BsonDocumentReader, Document}
 import util.MongoDBFindCameras.collection
 
 import scala.collection.immutable.HashMap
@@ -28,7 +30,11 @@ object MongoDBFindStoricData:
     var list: List[RecordedData] = List.empty
     while (cursor.hasNext) do
       val document = cursor.next()
-      list = RecordedData(document.getString("idCamera"), document.getLong("timestamp"), document.get("data", classOf[HashMap[Int, Int]])) :: list
+      val codec: Codec[Map.Map2[Int, Int]] = MongoDBClient.getDB.get.getCodecRegistry.get(classOf[Map.Map2[Int, Int]])
+      val dataInJson = document.get("data").asInstanceOf[Document].toJson()
+      val jsonReader = new JsonReader(dataInJson)
+      val data = codec.decode(jsonReader, DecoderContext.builder().build())
+      list = RecordedData(document.getString("idCamera"), document.getLong("timestamp"), data) :: list
     entries = list
     println(s"successfully read with result: $entries")
 
@@ -38,10 +44,14 @@ object MongoDBFindStoricData:
    * @param idCamera
    */
   def apply(idCamera: String): Unit =
-    val cursor = collection.find(Filters.eq("cameraId", idCamera)).iterator();
+    val cursor = collection.find(Filters.eq("idCamera", idCamera)).iterator();
     var list: List[RecordedData] = List.empty
     while (cursor.hasNext) do
       val document = cursor.next()
-      list = RecordedData(document.getString("idCamera"), document.getLong("timestamp"), document.get("data", classOf[HashMap[Int, Int]])) :: list
+      val codec: Codec[HashMap[Int, Int]] = MongoDBClient.getDB.get.getCodecRegistry.get(classOf[HashMap[Int, Int]])
+      val dataInJson = document.get("data").asInstanceOf[Document].toJson()
+      val jsonReader = new JsonReader(dataInJson)
+      val data = codec.decode(jsonReader, DecoderContext.builder().build())
+      list = RecordedData(document.getString("idCamera"), document.getLong("timestamp"), data) :: list
     entries = list
     println(s"successfully read with result: $entries")
