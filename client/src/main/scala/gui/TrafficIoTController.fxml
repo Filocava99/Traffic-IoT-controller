@@ -46,11 +46,11 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.media.MediaView?>
 <?import javafx.scene.paint.Color?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.web.WebView?>
 
-<VBox prefHeight="662.0" prefWidth="918.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox prefHeight="662.0" prefWidth="918.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
   <children>
     <MenuBar minWidth="-Infinity" prefHeight="22.0" prefWidth="918.0" VBox.vgrow="NEVER">
       <menus>
@@ -100,7 +100,7 @@
                 <Font size="18.0" fx:id="x1" />
               </font>
               <textFill>
-                <Color blue="0.624" green="0.624" red="0.624" fx:id="x2" />
+                <Color red="0.624" green="0.624" blue="0.624" fx:id="x2" />
               </textFill>
             </Label>
                   <Separator prefWidth="200.0" />
@@ -112,13 +112,13 @@
             <AnchorPane id="Content" minHeight="-1.0" minWidth="-1.0" prefHeight="545.0" prefWidth="678.0">
               <children>
                 <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Camera live stream" textAlignment="CENTER" textFill="$x2" wrapText="false" />
-                        <MediaView id="mediaView" fitHeight="270.0" fitWidth="630.0" layoutX="24.0" layoutY="55.0" AnchorPane.leftAnchor="24.0" AnchorPane.rightAnchor="24.399999999999977" />
                     <AnchorPane layoutY="316.0" prefHeight="289.0" prefWidth="678.0">
                       <children>
                         <Label alignment="CENTER" font="$x1" layoutX="14.0" layoutY="14.0" style="&#10;" text="Details" textAlignment="CENTER" textFill="$x2" wrapText="false" />
                               <ListView id="listView" accessibleRole="LIST_ITEM" layoutX="3.0" layoutY="45.0" prefHeight="250.0" prefWidth="670.0" />
                       </children>
                     </AnchorPane>
+                        <WebView id="webView" layoutX="1.0" layoutY="38.0" prefHeight="289.0" prefWidth="671.0" />
               </children>
             </AnchorPane>
           </content>
@@ -132,7 +132,7 @@
             <Font size="11.0" fx:id="x3" />
           </font>
           <textFill>
-            <Color blue="0.625" green="0.625" red="0.625" fx:id="x4" />
+            <Color red="0.625" green="0.625" blue="0.625" fx:id="x4" />
           </textFill>
         </Label>
         <Pane id="paneStatusView" prefHeight="14.0" prefWidth="874.0" HBox.hgrow="ALWAYS" />
