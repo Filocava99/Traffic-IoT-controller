@@ -27,9 +27,10 @@ import javafx.scene.Node
 import javafx.scene.media.MediaView
 import javafx.scene.control.ListView
 import javafx.concurrent.Task
-import javafx.scene.web.WebView
+import javafx.scene.web.{WebEngine, WebView}
 
 import java.util.concurrent.TimeUnit
+import java.util.{Timer, TimerTask}
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
@@ -38,6 +39,7 @@ import scala.util.{Failure, Success}
  */
 class ClientView extends JFXApp3:
   private var actualID: String = _
+  private val timer = new Timer()
 
   override def start(): Unit =
     MongoDBFindCameras()
@@ -47,6 +49,7 @@ class ClientView extends JFXApp3:
         content = FXMLLoader(getClass.getResource("/gui/TrafficIoTController.fxml")).load[VBox]
       }
     }
+    stage.resizable = false
     stage.show()
     initVideocamera(stage.scene.get().lookup("#vboxView").asInstanceOf[VBox])
 
@@ -54,7 +57,7 @@ class ClientView extends JFXApp3:
     for v <- MongoDBFindCameras.cameras yield {
       val button = new Button(v.id.toHexString)
       button.setText(v.details)
-      button.prefWidth = 222
+      button.prefWidth = 352
       button.prefHeight = 26
       button.onMouseClicked = () => mediaAndDataHandler(v.id.toHexString, Deployer.getActorRefViaReceptionist("broadcaster-" + v.id.toHexString))
       node.getChildren.add(button)
@@ -72,12 +75,19 @@ class ClientView extends JFXApp3:
     val media = stage.scene.get().lookup("#webView").asInstanceOf[WebView]
     val HTML_CONTENT = "<html><body>" + "<video width=\"640\" height=\"480\" controls>" + "<source src=\"http://192.168.1.18:5000\" type=\"image/jpeg\">" + "Your browser does not support the video tag." + "</video>" + "</body></html>"
     media.getEngine.load("http://192.168.1.18:5000")
-
-    // TODO: add camera transmission
-    println("#debug | media player object: " + media)
+    reloadWebView(media.getEngine)
     // connection to the database and get data to display
     MongoDBFindStoricData(id)
     displayInfo
+
+  private def reloadWebView(engine: WebEngine) =
+    timer.cancel()
+    val reloadWebViewTask = new TimerTask {
+      override def run(): Unit = {
+        engine.reload()
+      }
+    }
+    timer.scheduleAtFixedRate(reloadWebViewTask, 0, 1000)
 
   private def displayInfo =
     val info = stage.scene.get().lookup("#listView").asInstanceOf[ListView[RecordedData]]
