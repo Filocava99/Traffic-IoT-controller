@@ -27,6 +27,7 @@ import javafx.scene.Node
 import javafx.scene.media.MediaView
 import javafx.scene.control.ListView
 import javafx.concurrent.Task
+import javafx.scene.web.WebView
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{Await, Future}
@@ -68,7 +69,10 @@ class ClientView extends JFXApp3:
 
   private def mediaAndDataHandler(id: String, ref: ActorRef[DeviceMessage]) =
     checkID(id, ref)
-    val media = stage.scene.get().lookup("#mediaView").asInstanceOf[MediaView]
+    val media = stage.scene.get().lookup("#webView").asInstanceOf[WebView]
+    val HTML_CONTENT = "<html><body>" + "<video width=\"640\" height=\"480\" controls>" + "<source src=\"http://192.168.1.18:5000\" type=\"image/jpeg\">" + "Your browser does not support the video tag." + "</video>" + "</body></html>"
+    media.getEngine.load("http://192.168.1.18:5000")
+
     // TODO: add camera transmission
     println("#debug | media player object: " + media)
     // connection to the database and get data to display

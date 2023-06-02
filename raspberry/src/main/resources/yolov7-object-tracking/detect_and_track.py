@@ -31,12 +31,16 @@ global encodedFrame
 global opt
 app = Flask("RaspberryPi Live Feed")
 
+@app.route('/frame')
+def get_frame():
+    return Response(encodedFrame,
+                    mimetype = "multipart/x-mixed-replace; boundary=frame")
+
 @app.route("/")
 def video_feed():
 	# return the response generated along with the specific media
 	# type (mime type)
-	return Response(encodedFrame,
-		mimetype = "multipart/x-mixed-replace; boundary=frame")
+	return Response("<html><body><img src='frame.jpg'></body></html>")
 
 
 #............................... Bounding Boxes Drawing ............................
@@ -267,7 +271,9 @@ def detect(save_img=False):
             #print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS', flush=True)
 
             (flag, outputFrame) = cv2.imencode(".jpg", im0)
-
+            if os.path.exists("frame.jpg"):
+                os.remove("frame.jpg")
+            cv2.imwrite("frame.jpg", im0)
             global encodedFrame
             encodedFrame = b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(outputFrame) + b'\r\n'
 
