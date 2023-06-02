@@ -271,7 +271,7 @@ def detect(save_img=False):
             #print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS', flush=True)
 
             (flag, outputFrame) = cv2.imencode(".jpg", im0)
-            if (!os.path.exists("static/")):
+            if not os.path.exists("static/"):
                 os.mkdir("static/")
             if os.path.exists("static/frame.jpg"):
                 os.remove("static/frame.jpg")
