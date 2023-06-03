@@ -95,9 +95,9 @@ class ClientView extends JFXApp3:
 
     // create the progress bar
     val progressBar = new ProgressBar {
-      setLayoutX(237.0)
-      setLayoutY(620.0)
-      setPrefWidth(670.0)
+      setLayoutX(2.0)
+      setLayoutY(39.0)
+      setPrefWidth(1550.0)
       setPrefHeight(18.0)
     }
 
