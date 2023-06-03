@@ -31,6 +31,7 @@ import javafx.scene.web.{WebEngine, WebView}
 
 import java.util.concurrent.TimeUnit
 import java.util.{Timer, TimerTask}
+import scala.collection.mutable
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
@@ -39,7 +40,9 @@ import scala.util.{Failure, Success}
  */
 class ClientView extends JFXApp3:
   private var actualID: String = _
-  private val timer = new Timer()
+  private var timer = new Timer()
+  private var currentCameraViewId: String = ""
+  private val insideCameraView = mutable.Map[String, Boolean]()
 
   override def start(): Unit =
     MongoDBFindCameras()
@@ -63,31 +66,33 @@ class ClientView extends JFXApp3:
       node.getChildren.add(button)
     }
 
-  private def checkID(id: String, ref: ActorRef[DeviceMessage]) =
+  private def checkID(id: String, ref: ActorRef[DeviceMessage]): Unit =
     if Option(actualID).isEmpty then actualID = id
     else if actualID != id then
       ref ! Unsubscribe(Deployer.getActorRefViaReceptionist(actualID))
       actualID = id
       ref ! Subscribe(Deployer.getActorRefViaReceptionist(actualID))
 
-  private def mediaAndDataHandler(id: String, ref: ActorRef[DeviceMessage]) =
+  private def mediaAndDataHandler(id: String, ref: ActorRef[DeviceMessage]): Unit =
+    if insideCameraView.contains(currentCameraViewId) then insideCameraView(currentCameraViewId) = false
+    currentCameraViewId = id
+    insideCameraView(id) = true
     checkID(id, ref)
     val media = stage.scene.get().lookup("#webView").asInstanceOf[WebView]
-    val HTML_CONTENT = "<html><body>" + "<video width=\"640\" height=\"480\" controls>" + "<source src=\"http://192.168.1.18:5000\" type=\"image/jpeg\">" + "Your browser does not support the video tag." + "</video>" + "</body></html>"
     media.getEngine.load("http://192.168.1.18:5000")
-    reloadWebView(media.getEngine)
+    reloadWebView(id, media.getEngine)
     // connection to the database and get data to display
     MongoDBFindStoricData(id)
     displayInfo
 
-  private def reloadWebView(engine: WebEngine) =
-    timer.cancel()
-    val reloadWebViewTask = new TimerTask {
-      override def run(): Unit = {
-        engine.reload()
-      }
-    }
-    timer.scheduleAtFixedRate(reloadWebViewTask, 0, 1000)
+  private def reloadWebView(id: String, engine: WebEngine): Unit =
+    new Thread(){
+        override def run(): Unit =
+            while (insideCameraView(id)) do
+              engine.reload()
+            println("reload")
+            Thread.sleep(1000)
+    }.start()
 
   private def displayInfo =
     val info = stage.scene.get().lookup("#listView").asInstanceOf[ListView[RecordedData]]
@@ -95,8 +100,8 @@ class ClientView extends JFXApp3:
 
     // create the progress bar
     val progressBar = new ProgressBar {
-      setLayoutX(237.0)
-      setLayoutY(620.0)
+      setLayoutX(100.0)
+      setLayoutY(1163.0)
       setPrefWidth(670.0)
       setPrefHeight(18.0)
     }
