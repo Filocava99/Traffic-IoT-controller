@@ -20,13 +20,13 @@ object Slave:
             "--save-txt",
             "--save-bbox-dim",
             "--source", "/home/filippo/Traffic-IoT-controller/raspberry/src/main/resources/yolov7-object-tracking/video.mp4", //TODO change to 0 for webcam
-            //"--classes", "\"0 1 2 3 5 7\"",
-            "--classes", "0",
+            "--classes", "\"0 1 2 3 5 7\"",
+            //"--classes", "0",
             //"--device", "0",
             "--name", "YOLOV7 Object Tracking"
         ).redirectErrorStream(true)
           .redirectError(ProcessBuilder.Redirect.INHERIT)
-          .redirectOutput(ProcessBuilder.Redirect.PIPE) //.redirectOutput(ProcessBuilder.Redirect.PIPE)
+          .redirectOutput(ProcessBuilder.Redirect.PIPE)
         val process = pb.start()
         val bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream))
         var lastMaxIds = Map[Int, Int]()
@@ -34,8 +34,6 @@ object Slave:
         var dt: DateTime = DateTime.now()
         while (process.isAlive)
             var line = bufferedReader.readLine()
-            //println("line: ")
-            //println(line)
             if (line != null)
                 if (line.startsWith("{"))
                     val root = line.as[Root]
@@ -46,14 +44,10 @@ object Slave:
                                 dt = DateTime.now()
                                 detectedObjects = Map[Int, Int](0 -> 0, 1 -> 0, 2 -> 0, 3 -> 0, 5 -> 0, 7 -> 0)
                             val maxIds: Map[Int, Int] = detections.groupBy(_.`class`).map((entry) => (entry._1, entry._2.map(_.id).max))
-                            //println(maxIds)
                             maxIds.foreach(entry => {
                                 if (!lastMaxIds.contains(entry._1)) {
-                                    //println("pippo")
                                     detectedObjects += entry
                                 } else if (entry._2 > lastMaxIds(entry._1)) // => detected new objects for that class
-                                //println("pluto")
-                                //detectedObjects += (entry._1 -> (detectedObjects(entry._1) + entry._2 - lastMaxIds(entry._1)))
                                     detectedObjects += (entry._1 -> (entry._2 - lastMaxIds(entry._1)))
                             })
                             lastMaxIds = maxIds
@@ -62,4 +56,3 @@ object Slave:
                         case _ =>
         process.waitFor()
         while (process.isAlive) {}
-        println("Process exited")

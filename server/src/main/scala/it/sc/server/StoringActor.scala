@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior, DispatcherSelector}
 import com.github.nscala_time.time.Imports.DateTime
 import com.typesafe.config.ConfigFactory
 import it.pps.ddos.deployment.Deployer
-import it.pps.ddos.device.DeviceProtocol.{AckedStatus, DeviceMessage, Message, Statuses}
+import it.pps.ddos.device.DeviceProtocol.{AckedStatus, DeviceMessage, Message, StatusAck, Statuses}
 import it.pps.ddos.device.sensor.StoreDataSensor
 import it.pps.ddos.grouping.*
 import it.pps.ddos.grouping.tagging.{Deployable, MapTag, TriggerMode}
@@ -32,20 +32,6 @@ object StoringActor:
 
       Behaviors.receivePartial { (context, message) =>
         message match
-//          case Statuses(author, values: List[RecordedData]) =>
-//            val entryCollection = MongoDBClient.getDB.get.getCollection("storicCount")
-//            values.foreach(entry =>
-//              println("Received data from: " + author)
-//              println(entry)
-//              println("Inserting data in the DB")
-//              val result = entryCollection.insertOne(new Document()
-//                .append("_id", new ObjectId())
-//                .append("idCamera", entry.idCamera)
-//                .append("timeStamp", entry.timeStamp)
-//                .append("data", entry.data.asInstanceOf[Map.Map2[Int, Int]]))
-//              println("Data inserted: " + result.getInsertedId)
-//            )
-//            Behaviors.same
           case Statuses(author, values: List[Map[String, Object]]) =>
             val entryCollection = MongoDBClient.getDB.get.getCollection("storicCount")
             values.foreach(entry =>

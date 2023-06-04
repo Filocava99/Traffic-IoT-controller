@@ -23,21 +23,6 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 object ServerActor:
-
-    //implicit object cameraEntryReader extends BSONDocumentReader[Camera]:
-    //    def readDocument(doc: BSONDocument) = for {
-    //      id <- doc.getAsTry[BSONObjectID]("_id")
-    //      details <- doc.getAsTry[String]("details")
-    //    } yield Camera(id, details)
-    //
-    //  implicit val cameraEntryWriter: BSONDocumentWriter[Camera] =
-    //    BSONDocumentWriter[Camera] { entry =>
-    //      BSONDocument("_id" -> entry.id,
-    //        "details" -> entry.details)
-    //    }
-
-    // My settings (see available connection options)
-
     def apply(): Behavior[DeviceMessage] =
         Behaviors.setup[DeviceMessage] { context =>
             val collection: MongoCollection[Document] = MongoDBClient.getDB.get.getCollection("cameras")

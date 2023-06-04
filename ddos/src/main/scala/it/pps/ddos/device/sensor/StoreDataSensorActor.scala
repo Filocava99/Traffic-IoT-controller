@@ -11,7 +11,6 @@ import com.github.nscala_time.time.Imports.*
 object StoreDataSensorActor:
   def apply[O: DataType](sensor: StoreDataSensor[O]): StoreDataSensorActor[O] = new StoreDataSensorActor(sensor)
 
-
 class StoreDataSensorActor[O: DataType](val sensor: StoreDataSensor[O]):
 
   private def basicStoreDataSensorBehavior(ctx: ActorContext[DeviceMessage]): PartialFunction[DeviceMessage, Behavior[DeviceMessage]] =

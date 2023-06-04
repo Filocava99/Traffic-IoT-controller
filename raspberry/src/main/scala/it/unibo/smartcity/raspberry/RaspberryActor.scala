@@ -26,19 +26,15 @@ object RaspberryActor:
           message match
             case Timeout() =>
               val serverRef = Deployer.getActorRefViaReceptionist("server")
-              println("SERVERREF: " + serverRef)
               serverRef ! IdRequest(details, context.self)
               Behaviors.same
             case IdAnswer(id: String) =>
               timer.cancel("connectingStateTimer")
               Thread.sleep(5000)
-              println("IDANSWER RECEIVED: " + id)
-              Thread.sleep(5000)
               val broadcasterRef = Deployer.getActorRefViaReceptionist("broadcaster-" + id)
               Thread.sleep(5000)
               val storingRef = Deployer.getActorRefViaReceptionist("storing")
               Thread.sleep(5000)
-              println("Deploying StoreDataSensor")
               Deployer.deploy(new StoreDataSensor[RecordedData]("raspberry-" + id, List(broadcasterRef, storingRef), x => x))
               Thread.sleep(5000)
               val sensorRef = Deployer.getActorRefViaReceptionist("raspberry-" + id)
@@ -47,7 +43,6 @@ object RaspberryActor:
               Thread.sleep(5000)
               Slave(sensorRef, id)
               Thread.sleep(5000)
-              println("Completed raspberry startup")
               Behaviors.same
         }
       }
