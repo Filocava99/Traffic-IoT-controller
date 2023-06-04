@@ -20,8 +20,8 @@ object Slave:
             "--save-txt",
             "--save-bbox-dim",
             "--source", "/home/filippo/Traffic-IoT-controller/raspberry/src/main/resources/yolov7-object-tracking/video.mp4", //TODO change to 0 for webcam
-            //"--classes", "\"0 1 2 3 5 7\"",
-            "--classes", "0",
+            "--classes", "\"0 1 2 3 5 7\"",
+            //"--classes", "0",
             //"--device", "0",
             "--name", "YOLOV7 Object Tracking"
         ).redirectErrorStream(true)
