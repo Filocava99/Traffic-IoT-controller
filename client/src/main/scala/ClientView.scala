@@ -1,5 +1,5 @@
 import akka.actor.typed.ActorRef
-import com.github.nscala_time.time.Imports.Duration
+import com.github.nscala_time.time.Imports.{DateTime, DateTimeFormat, Duration}
 import it.pps.ddos.deployment.Deployer
 import it.pps.ddos.deployment.graph.Graph
 import it.pps.ddos.device.Device
@@ -95,15 +95,15 @@ class ClientView extends JFXApp3:
     }.start()
 
   private def displayInfo =
-    val info = stage.scene.get().lookup("#listView").asInstanceOf[ListView[RecordedData]]
+    val info = stage.scene.get().lookup("#listView").asInstanceOf[ListView[String]]
     var items: ObservableBuffer[RecordedData] = ObservableBuffer.empty
 
     // create the progress bar
     val progressBar = new ProgressBar {
-      setLayoutX(2.0)
-      setLayoutY(39.0)
+      setLayoutX(360.0)
+      setLayoutY(995.0)
       setPrefWidth(1550.0)
-      setPrefHeight(18.0)
+      setPrefHeight(22.0)
     }
 
     val task = new Task[Unit] {
@@ -119,8 +119,9 @@ class ClientView extends JFXApp3:
         }
         progressBar.setVisible(false)
     }
+
     task.setOnScheduled(_ => items = ObservableBuffer.from(MongoDBFindStoricData.storicData)) // take data from "storicData" database collection
-    task.setOnSucceeded(_ => info.items = items) // set the GUI list of details with the data retrieved
+    task.setOnSucceeded(_ => info.items = formattedInfo(items)) // set the GUI list of details with the data retrieved
 
     progressBar.setVisible(true)
     progressBar.progress <== task.progressProperty() // bind the progress bar to the progress of the task
@@ -131,6 +132,18 @@ class ClientView extends JFXApp3:
     val progressBarThread: Thread = new Thread(task)
     progressBarThread.start()
     progressBarThread.join(50)
+
+  private def formattedInfo(infos: ObservableBuffer[RecordedData]): ObservableBuffer[String] =
+    infos.map(entry => new DateTime(entry.timeStamp).toString(DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")) + "\t" + entry.data.map {
+        case (key, value) => key match
+          case 0 => "People: " + value
+          case 1 => "Bycicles: " + value
+          case 2 => "Cars: " + value
+          case 3 => "Motorcycles: " + value
+          case 5 => "Busses: " + value
+          case 7 => "Trucks :" + value
+          case _ => ""
+      }.mkString(", "))
 
 /**
  * Define the static view initialization
